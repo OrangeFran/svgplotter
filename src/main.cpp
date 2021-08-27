@@ -39,18 +39,20 @@ void step(int motor) {
   digitalWrite(stepPins[motor], LOW);
 }
 
-void changeDirection(int direction[]) {
+void setDirection(int direction[]) {
   for (int i = 0; i < 2; i++) {
     digitalWrite(dirPins[i], direction[i]);
   }
 }
 
-// TODO: Make it work!
 // Travel a certain distance in mm 
-void travel(int distance) {
+void travel(int distance, int velocity) {
   int steps = distance/0.019625;
-  for (int i = 0; i < steps; i++)
-    step(0); step(1); delay(5);
+  for (int i = 0; i < steps; i++) {
+    step(0);
+    step(1);
+    delay(velocity);
+  }
 }
 
 // Serial.begin(9600);
@@ -62,16 +64,17 @@ void setup() {
     pinMode(dirPins[p], OUTPUT);
   for (int p = 0; p < 2; p++)
     pinMode(stepPins[p], OUTPUT);
-  // Set direction to going up
-  changeDirection(goLeft);
-  // Turn on the motors itself
+  // Start the motors
   motorState(true);
-  // travel(100);
 }
 
 void loop() {
-  step(0);
-  step(1);
-  // Velocity for now ...
-  delay(5);
+  setDirection(goLeft);
+  travel(100, 2);
+  setDirection(goUp);
+  travel(100, 2);
+  setDirection(goRight);
+  travel(100, 2);
+  setDirection(goDown);
+  travel(100, 2);
 }
