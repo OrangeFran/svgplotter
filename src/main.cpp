@@ -1,80 +1,75 @@
 #include <Arduino.h>
+#include "Joystick.h"
+#include "Move.h"
 
-// Pins to set direction
-// HIGH -> clockwise
-// LOW -> counter clockwise
-int dirPins[] = {16, 18};
-// Pins to move
-int stepPins[] = {17, 19};
+// The whiteboard (in mm)
+int width = 1930;
+int height = 1170;
+// The current position (s1, s2)
+// s1 = left string, s2 = right string
+int position[] = {1535, 1535};
 
-// Pins to control state of motors
-int enPin = 12;
-int resPin = 33;
-int sleepPin = 32;
-// ON/OFF global state of motors
-bool motorstate = false;
+int velocity = 500;
+// TODO: measure/calculate exact mm per step
+float perstep = 0.019625; // 0.07925;
 
-// Directions
-// {motor1, motor2}
-// 1 -> clockwise, 0 -> counterclockwise
-int goUp[] = {1, 0};
-int goDown[] = {0, 1};
-int goLeft[] = {1, 1};
-int goRight[] = {0, 0};
-
-void motorState(bool on) {
-  pinMode(enPin, OUTPUT);
-  digitalWrite(enPin, !on);
-  pinMode(resPin, OUTPUT);
-  digitalWrite(resPin, on);
-  pinMode(sleepPin, OUTPUT);
-  digitalWrite(sleepPin, on);
-  motorstate = on;
-}
-
-// Do one step with the specified motor
-void step(int motor) {
-  digitalWrite(stepPins[motor], HIGH);
-  delayMicroseconds(2);
-  digitalWrite(stepPins[motor], LOW);
-}
-
-void setDirection(int direction[]) {
-  for (int i = 0; i < 2; i++) {
-    digitalWrite(dirPins[i], direction[i]);
+// Make the string for a certain motor longer/shorter
+int directions[] = {1, 0};
+void travel(int distance, int stepper) {
+  // Set the direction
+  if (distance < 0) {
+    digitalWrite(dirPins[stepper], directions[stepper]);
+  } else {
+    digitalWrite(dirPins[stepper], stepper);
   }
-}
-
-// Travel a certain distance in mm 
-void travel(int distance, int velocity) {
-  int steps = distance/0.019625;
+  // Calculate and do steps
+  int steps = abs(distance)/perstep;
   for (int i = 0; i < steps; i++) {
-    step(0);
-    step(1);
-    delay(velocity);
+    step(stepper);
+    delayMicroseconds(velocity);
   }
 }
 
-// Serial.begin(9600);
-// Serial.println("Setup ...");
+void goTo(int x, int y) {
+  int new_s1 = sqrt(pow(width/2 + x, 2) + pow(height - y, 2));
+  int new_s2 = sqrt(pow(width/2 - x, 2) + pow(height - y, 2));
+  int distance_s1 = new_s1 - position[0];
+  int distance_s2 = new_s2 - position[1];
+
+  Serial.printf("-> %d, %d", distance_s1, distance_s2);
+
+  // // TODO: move the direction part into the travel function
+  // // If negative, go clockwise
+  // if (distance_s1 < 0) {
+  //   digitalWrite(dirPins[0], 1);
+  // // Else turn anticlockwise
+  // } else {
+  //   digitalWrite(dirPins[0], 0);
+  // }
+  travel(distance_s1, 0);
+
+  // // If string to is negative, go anticlockwise
+  // if (distance_s2 < 0) {
+  //   digitalWrite(dirPins[1], 0);
+  // // Else turn clockwise
+  // } else {
+  //   digitalWrite(dirPins[1], 1);
+  // }
+  travel(distance_s2, 1);
+}
 
 void setup() {
+  Serial.begin(9600);
   // Set all pins to output
   for (int p = 0; p < 2; p++)
     pinMode(dirPins[p], OUTPUT);
   for (int p = 0; p < 2; p++)
     pinMode(stepPins[p], OUTPUT);
-  // Start the motors
+  // pinMode(joyPins[2], INPUT_PULLUP);
   motorState(true);
+  goTo(100, 100);
 }
 
 void loop() {
-  setDirection(goLeft);
-  travel(100, 2);
-  setDirection(goUp);
-  travel(100, 2);
-  setDirection(goRight);
-  travel(100, 2);
-  setDirection(goDown);
-  travel(100, 2);
+  joystick();
 }
