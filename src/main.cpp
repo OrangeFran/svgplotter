@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include "Joystick.h"
-#include "Move.h"
+#include "joystick.h"
+#include "move.h"
 
 // The whiteboard (in mm)
 int width = 1930;

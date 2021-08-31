@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "Move.h"
+#include "move.h"
 
 // Pins to set direction
 int dirPins[] = {16, 18}; // (left, right)
