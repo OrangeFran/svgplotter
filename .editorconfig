@@ -1,4 +1,4 @@
-[*.{h, cpp}]
+[*.cpp]
 # Two space indents for cpp and header files
 indent_style = space
 indent_size = 2

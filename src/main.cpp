@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <Arduino.h>
 #include "joystick.h"
 #include "move.h"
@@ -7,67 +8,122 @@ int width = 1930;
 int height = 1170;
 // The current position (s1, s2)
 // s1 = left string, s2 = right string
-int position[] = {1535, 1535};
+int position[] = {1516, 1516};
 
-int velocity = 500;
+float base_velocity = 1.0;
 // TODO: measure/calculate exact mm per step
 float perstep = 0.019625; // 0.07925;
 
+struct to_travel {
+  float velocity;
+  int distance;
+  int stepper;
+};
 // Make the string for a certain motor longer/shorter
-int directions[] = {1, 0};
-void travel(int distance, int stepper) {
+void *travel(void *args) {
+  int stepper = ((struct to_travel *)args)->stepper;
+  int distance = ((struct to_travel *)args)->distance;
+  float velocity = ((struct to_travel *)args)->velocity;
+
   // Set the direction
-  if (distance < 0) {
-    digitalWrite(dirPins[stepper], directions[stepper]);
-  } else {
-    digitalWrite(dirPins[stepper], stepper);
-  }
+  digitalWrite(dirPins[stepper], distance > 0 ? stepper : (int)!(bool)stepper);
   // Calculate and do steps
   int steps = abs(distance)/perstep;
   for (int i = 0; i < steps; i++) {
     step(stepper);
-    delayMicroseconds(velocity);
+    vTaskDelay(velocity * portTICK_PERIOD_MS);
   }
+
+  return 0;
 }
 
-void goTo(int x, int y) {
+// int old_go_to(int x, int y) {
+//   // Calculate the new length of the string
+//   int new_s1 = sqrt(pow(width/2 + x, 2) + pow(height - y, 2));
+//   int new_s2 = sqrt(pow(width/2 - x, 2) + pow(height - y, 2));
+//   // Calculate the necessary movement
+//   int distance_s1 = new_s1 - position[0];
+//   int distance_s2 = new_s2 - position[1];
+//   // Update the position
+//   position[0] = new_s1;
+//   position[1] = new_s2;
+// 
+//   Serial.printf("-> %d, %d\n", distance_s1, distance_s2);
+//   Serial.printf("position: %d, %d\n", position[0], position[1]);
+// 
+//   struct to_travel to_travel_s1 = {distance_s1, 0};
+//   struct to_travel to_travel_s2 = {distance_s2, 1};
+//   travel(&to_travel_s1);
+//   travel(&to_travel_s2);
+//   return 0;
+// }
+
+int go_to(int x, int y) {
+  Serial.printf("Going to (%d, %d) ...", x, y);
+
+  // Calculate the new length of the string
   int new_s1 = sqrt(pow(width/2 + x, 2) + pow(height - y, 2));
   int new_s2 = sqrt(pow(width/2 - x, 2) + pow(height - y, 2));
+  // Calculate the necessary movement
   int distance_s1 = new_s1 - position[0];
   int distance_s2 = new_s2 - position[1];
+  // Update the position
+  position[0] = new_s1;
+  position[1] = new_s2;
 
-  Serial.printf("-> %d, %d", distance_s1, distance_s2);
+  Serial.printf("distances: %d, %d\n", distance_s1, distance_s2);
+  Serial.printf("position:  %d, %d\n", position[0], position[1]);
 
-  // // TODO: move the direction part into the travel function
-  // // If negative, go clockwise
-  // if (distance_s1 < 0) {
-  //   digitalWrite(dirPins[0], 1);
-  // // Else turn anticlockwise
-  // } else {
-  //   digitalWrite(dirPins[0], 0);
-  // }
-  travel(distance_s1, 0);
+  // Calculate the needed velocities
+  float velocity_s1, velocity_s2;
+  if (distance_s1 < distance_s2) {
+    velocity_s1 = base_velocity;
+    velocity_s2 = (float)abs(distance_s1) / (float)abs(distance_s2) * velocity_s1;
+  } else {
+    velocity_s2 = base_velocity;
+    velocity_s1 = (float)abs(distance_s2) / (float)abs(distance_s1) * velocity_s2;
+  }
 
-  // // If string to is negative, go anticlockwise
-  // if (distance_s2 < 0) {
-  //   digitalWrite(dirPins[1], 0);
-  // // Else turn clockwise
-  // } else {
-  //   digitalWrite(dirPins[1], 1);
-  // }
-  travel(distance_s2, 1);
+  Serial.printf("velocities: %f, %f\n", velocity_s1, velocity_s2);
+
+  // Spawn two threads, one for each motor
+  pthread_t threads[2];
+  struct to_travel to_travel_s1 = {velocity_s1, distance_s1, 0};
+  struct to_travel to_travel_s2 = {velocity_s2, distance_s2, 1};
+  int return_val_s1 = pthread_create(&threads[0], NULL, travel, &to_travel_s1);
+  int return_val_s2 = pthread_create(&threads[1], NULL, travel, &to_travel_s2);
+  if (return_val_s1 != 0 || return_val_s2 != 0) {
+    Serial.println("Failed to create threads!");
+    return 1;
+  }
+
+  // Wait for the threads to complete
+  // and check the status code
+  void *status_s1, *status_s2;
+  pthread_join(threads[0], &status_s1);
+  pthread_join(threads[1], &status_s2);
+  if (status_s1 != 0 || status_s2 != 0) {
+    Serial.println("Failed to move!");
+    return 1;
+  }
+
+  return 0;
 }
 
 void setup() {
+  // enableCore0WDT();
+  // enableCore1WDT();
   Serial.begin(9600);
   // Set all pins to output
+  motorState(true);
   for (int p = 0; p < 2; p++)
     pinMode(dirPins[p], OUTPUT);
   for (int p = 0; p < 2; p++)
     pinMode(stepPins[p], OUTPUT);
-  // pinMode(joyPins[2], INPUT_PULLUP);
-  motorState(true);
-  goTo(100, 100);
+  // Move to a coordinate
+  if (go_to(200, 100) != 0) {
+    Serial.println("Could not move to coordinate!");
+  }
 }
 
 void loop() {
