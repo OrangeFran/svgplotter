@@ -1,5 +1,6 @@
 // Code to use plotter with joystick
 // From Ivo Blöchliger - KSBG
+// TODO: Rework for StepperMotor
 
 #include <Arduino.h>
 #include "joystick.h"
