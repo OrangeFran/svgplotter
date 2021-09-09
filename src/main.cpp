@@ -3,6 +3,7 @@
 
 #include "joystick.h"
 #include "stepper.h"
+#include "parser.h"
 
 // The whiteboard (in mm)
 int boardWidth = 1930;
@@ -113,10 +114,7 @@ int goTo(int x, int y) {
 
 void setup() {
   Serial.begin(9600);
-  // Set all pins to output
   setMotorState(true);
-  StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
-  StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
   // Move to a coordinate
   if (goTo(200, 100) != 0) {
     Serial.println("Could not move to coordinate!");
