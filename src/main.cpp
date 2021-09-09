@@ -15,14 +15,6 @@ float baseVelocity = 1.0;
 // TODO: measure/calculate exact mm per step
 // float perstep = 0.019625; // 0.07925;
 
-// StepperMotor stepper1;
-// StepperMotor stepper2;
-
-// Pins to set direction
-int dirPins[] = {16, 18}; // (left, right)
-// Pins to move
-int stepPins[] = {17, 19}; // (left, right)
-
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
 
@@ -113,10 +105,7 @@ int goTo(int x, int y) {
 
 void setup() {
   Serial.begin(9600);
-  // Set all pins to output
   setMotorState(true);
-  StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
-  StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
   // Move to a coordinate
   if (goTo(200, 100) != 0) {
     Serial.println("Could not move to coordinate!");
