@@ -7,13 +7,13 @@
 
 // The whiteboard (in mm)
 int boardWidth = 1930;
-int boardHeight = 1170;
+int boardHeight = 1150;
 // The current position (s1, s2)
 // s1 = left string, s2 = right string
-int position[2] = {1516, 1516};
+int initialPosition = sqrt(pow(boardWidth/2, 2) + pow(boardHeight, 2));
+int position[2] = {initialPosition, initialPosition};
 
-float baseVelocity = 1.0;
-// TODO: measure/calculate exact mm per step
+float baseVelocity = 500;
 
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
@@ -90,6 +90,11 @@ int goTo(int x, int y) {
   //   return 1;
   // }
 
+  // Calculate and do steps
+  // The direction is already set, so the prefix can be
+  // removed with abs()
+  int steps = abs(distanceS1)/perstep;
+
   // Wrap the member functions to fill the requirement for a
   // static non-member function
   Serial.println("Starting threads ...");
@@ -100,48 +105,56 @@ int goTo(int x, int y) {
   threadS1.join();
   threadS2.join();
 
+  delayMicroseconds(velocityS1 * steps);
+  stepper1.stop();
+  stepper2.stop();
+
   return 0;
 }
 
-typedef struct Point {
-  float x;
-  float y;
-} Point;
+// typedef struct Point {
+//   float x;
+//   float y;
+// } Point;
 
-/*
- * Implementation of De Casteljau's algorithm
- * parametric function with `t` -> move t from 0 to 1
- *
- * `B(t) = (1 - t)^2 P_0 + 2t (1 - t) P_1 + t^2 P_2`
-*/
+// // Implementation of De Casteljau's algorithm
+// // parametric function with `t` -> move t from 0 to 1
+// //
+// // `B(t) = (1 - t)^2 P_0 + 2t (1 - t) P_1 + t^2 P_2`
 
-/*
-int bezierCurve(Point p0, Point p1, Point p2) {
-  int accuracy = 50;
-  // Move t from 0 to 1
-  // accuracy defines the amount of steps between
-  int x, y;
-  for (int t = 0; t =< 1; t += 1/accuracy) {
-    x = pow((1 - t), 2) * p0.x + 2 * t * (1 - t) * p1.x + pow(t, 2) * p2.x;
-    y = pow((1 - t), 2) * p0.y + 2 * t * (1 - t) * p1.y + pow(t, 2) * p2.y;
-    if (goTo(x, y) != 0) {
-      Serial.println("Failed to move!");
-    }
-  }
-  return 0;
-}
-*/
+// int bezierCurve(Point p0, Point p1, Point p2) {
+//   int accuracy = 50;
+//   // Move t from 0 to 1
+//   // accuracy defines the amount of steps between
+//   int x, y;
+//   for (int t = 0; t =< 1; t += 1/accuracy) {
+//     x = pow((1 - t), 2) * p0.x + 2 * t * (1 - t) * p1.x + pow(t, 2) * p2.x;
+//     y = pow((1 - t), 2) * p0.y + 2 * t * (1 - t) * p1.y + pow(t, 2) * p2.y;
+//     if (goTo(x, y) != 0) {
+//       Serial.println("Failed to move!");
+//     }
+//   }
+//   return 0;
+// }
 
 void setup() {
   Serial.begin(9600);
   setMotorState(true);
   // Move to a coordinate
-  // if (goTo(0, 200) != 0) {
-  //   Serial.println("Could not move to coordinate!");
-  // }
+  delay(5000);
+  goTo(0, 100);
+  delay(5000);
+  goTo(100, 100);
+  delay(5000);
+  goTo(100, 0);
+  delay(5000);
+  goTo(0, 0);
 }
 
 void loop() {
+  // Deattach pins
+  ledcDetachPin(stepper1.stepPin);
+  ledcDetachPin(stepper2.stepPin);
   // Fall back to joystick control
   joystick();
 }

@@ -3,6 +3,7 @@
 
 // #define CONFIG_FREERTOS_HZ 1000
 
+// TODO: measure/calculate exact mm per step
 float perstep = 0.009817477;
                 // 0.019625;
                 // 0.07925;
@@ -40,16 +41,25 @@ void step(int stepper) {
 
 // Constructor
 StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
-  this->index = index;
+  this->index = index; // 0 / 1
   this->dirPin = dirPin;
   this->stepPin = stepPin;
-  // Set the two pins to OUTPUT
+  // Set the direction pin to OUTPUT
   pinMode(this->dirPin, OUTPUT);
-  pinMode(this->stepPin, OUTPUT);
+  // Attach a channel to the stepping pin 
+  // There are only 8 timers for 16 channels
+  // -> subsequent channels use the same timer
+  // and thus cannot be driven by different frequencies
+  // pinMode(this->stepPin, OUTPUT);
+  ledcAttachPin(this->stepPin, this->index * 2);
+  // Frequency is arbitrary on init and will be set
+  // with the velocity
+  ledcSetup(this->index * 2, 1000, 8);
 }
 
 void StepperMotor::setVelocity(float newVelocity) {
-  velocity = newVelocity;
+  this->velocity = newVelocity;
+  ledcWriteTone(this->index * 2, (int)(1000000/this->velocity));
 }
 
 // Do one step
@@ -67,19 +77,28 @@ int StepperMotor::travel(int distance) {
   // Set the direction
   digitalWrite(this->dirPin, distance > 0 ? stepper : (int)!(bool)stepper);
 
-  // Calculate and do steps
-  // The direction is already set, so the prefix can be
-  // removed with abs()
-  int steps = abs(distance)/perstep;
-  TickType_t x_last_wake_time = xTaskGetTickCount();
-  TickType_t frequency = velocity * portTICK_PERIOD_MS;
-  for (int i = 0; i < steps; i++) {
-    this->step();
-    // delayMicroseconds will not work,
-    // because it does not provide time for the watchdog
-    // vTaskDelay is absolute, vTaskDelayUntil is relative
-    vTaskDelayUntil(&x_last_wake_time, frequency);
-  }
+  // // Calculate and do steps
+  // // The direction is already set, so the prefix can be
+  // // removed with abs()
+  // int steps = abs(distance)/perstep;
 
+  // With current frequency: One tick = one millisecond
+  // TickType_t x_last_wake_time = xTaskGetTickCount();
+  // TickType_t frequency = velocity * portTICK_PERIOD_MS;
+  // for (int i = 0; i < steps; i++) {
+  //   this->step();
+  //   // delayMicroseconds will not work,
+  //   // because it does not provide time for the watchdog
+  //   // vTaskDelay is absolute, vTaskDelayUntil is relative
+  //   vTaskDelayUntil(&x_last_wake_time, frequency);
+  // }
+
+  // The dutyCycle does not have to be that
+  ledcWrite(stepper * 2, round(2/velocity * 255));
   return 0;
+}
+
+// Stop the motor
+int StepperMotor::stop() {
+  ledcWrite(this->index * 2, 0);
 }

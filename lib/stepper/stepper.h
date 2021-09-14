@@ -1,3 +1,4 @@
+extern float perstep;
 extern bool motorState;
 void setMotorState(bool);
 
@@ -9,13 +10,14 @@ class StepperMotor {
     int index; // left -> 0, right -> 1
     float velocity;
     int dirPin;
-    int stepPin;
   public:
+    int stepPin;
     // Constructor
     StepperMotor(int, int, int);
-    void step();
+    void step(void);
     void setVelocity(float);
     int travel(int distance);
+    int stop(void);
 };
 
 // Old function still needed for lib/joystick
