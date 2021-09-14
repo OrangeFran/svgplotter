@@ -1,3 +1,4 @@
+// #include <pthread.h>
 #include <thread>
 #include <Arduino.h>
 
@@ -13,7 +14,6 @@ int position[2] = {1516, 1516};
 
 float baseVelocity = 1.0;
 // TODO: measure/calculate exact mm per step
-// float perstep = 0.019625; // 0.07925;
 
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
@@ -68,12 +68,13 @@ int goTo(int x, int y) {
 
   Serial.printf("Velocities: %f, %f\n", velocityS1, velocityS2);
 
+  stepper1.setVelocity(velocityS1);
+  stepper2.setVelocity(velocityS2);
+
   // // Spawn two threads, one for each motor
   // pthread_t threads[2];
-  // stepper1.setVelocity(velocityS1);
-  // stepper2.setVelocity(velocityS2);
-  // int creationS1 = pthread_create(&threads[0], NULL, stepper1.travel, &distanceS1);
-  // int creationS2 = pthread_create(&threads[1], NULL, stepper2.travel, &distanceS2);
+  // int creationS1 = pthread_create(&threads[0], NULL, [](int d) { stepper1.travel(d); }, &distanceS1);
+  // int creationS2 = pthread_create(&threads[1], NULL, [](int d) { stepper2.travel(d); }, &distanceS2);
   // if (creationS1 != 0 || creationS2 != 0) {
   //   Serial.println("Failed to create threads!");
   //   return 1;
@@ -89,27 +90,55 @@ int goTo(int x, int y) {
   //   return 1;
   // }
 
-  stepper1.setVelocity(velocityS1);
-  stepper2.setVelocity(velocityS2);
-
   // Wrap the member functions to fill the requirement for a
   // static non-member function
+  Serial.println("Starting threads ...");
   std::thread threadS1([](int d) { stepper1.travel(d); }, distanceS1);
   std::thread threadS2([](int d) { stepper2.travel(d); }, distanceS2);
 
+  Serial.println("Waiting for threads ...");
   threadS1.join();
   threadS2.join();
 
   return 0;
 }
 
+typedef struct Point {
+  float x;
+  float y;
+} Point;
+
+/*
+ * Implementation of De Casteljau's algorithm
+ * parametric function with `t` -> move t from 0 to 1
+ *
+ * `B(t) = (1 - t)^2 P_0 + 2t (1 - t) P_1 + t^2 P_2`
+*/
+
+/*
+int bezierCurve(Point p0, Point p1, Point p2) {
+  int accuracy = 50;
+  // Move t from 0 to 1
+  // accuracy defines the amount of steps between
+  int x, y;
+  for (int t = 0; t =< 1; t += 1/accuracy) {
+    x = pow((1 - t), 2) * p0.x + 2 * t * (1 - t) * p1.x + pow(t, 2) * p2.x;
+    y = pow((1 - t), 2) * p0.y + 2 * t * (1 - t) * p1.y + pow(t, 2) * p2.y;
+    if (goTo(x, y) != 0) {
+      Serial.println("Failed to move!");
+    }
+  }
+  return 0;
+}
+*/
+
 void setup() {
   Serial.begin(9600);
   setMotorState(true);
   // Move to a coordinate
-  if (goTo(200, 100) != 0) {
-    Serial.println("Could not move to coordinate!");
-  }
+  // if (goTo(0, 200) != 0) {
+  //   Serial.println("Could not move to coordinate!");
+  // }
 }
 
 void loop() {

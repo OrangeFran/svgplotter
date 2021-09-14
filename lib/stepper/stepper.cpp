@@ -1,7 +1,11 @@
 #include <Arduino.h>
 #include "stepper.h"
 
-float perstep = 0.019625; // 0.07925;
+// #define CONFIG_FREERTOS_HZ 1000
+
+float perstep = 0.009817477;
+                // 0.019625;
+                // 0.07925;
 
 // Pins to move and set direction (left, right)
 int stepPins[2] = {17, 19};
@@ -26,7 +30,7 @@ void setMotorState(bool on) {
   motorState = on;
 }
 
-// Old function still needed for lib/joystick
+// OLD function still needed for lib/joystick
 // Do one step with the specified motor
 void step(int stepper) {
   digitalWrite(stepPins[stepper], HIGH);
@@ -39,6 +43,9 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   this->index = index;
   this->dirPin = dirPin;
   this->stepPin = stepPin;
+  // Set the two pins to OUTPUT
+  pinMode(this->dirPin, OUTPUT);
+  pinMode(this->stepPin, OUTPUT);
 }
 
 void StepperMotor::setVelocity(float newVelocity) {
@@ -65,13 +72,13 @@ int StepperMotor::travel(int distance) {
   // removed with abs()
   int steps = abs(distance)/perstep;
   TickType_t x_last_wake_time = xTaskGetTickCount();
+  TickType_t frequency = velocity * portTICK_PERIOD_MS;
   for (int i = 0; i < steps; i++) {
     this->step();
     // delayMicroseconds will not work,
     // because it does not provide time for the watchdog
     // vTaskDelay is absolute, vTaskDelayUntil is relative
-    vTaskDelayUntil(&x_last_wake_time, velocity * portTICK_PERIOD_MS);
-    // vTaskDelay(velocity * portTICK_PERIOD_MS);
+    vTaskDelayUntil(&x_last_wake_time, frequency);
   }
 
   return 0;
