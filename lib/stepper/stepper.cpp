@@ -46,20 +46,24 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   this->stepPin = stepPin;
   // Set the direction pin to OUTPUT
   pinMode(this->dirPin, OUTPUT);
+  pinMode(this->stepPin, OUTPUT);
   // Attach a channel to the stepping pin 
   // There are only 8 timers for 16 channels
   // -> subsequent channels use the same timer
   // and thus cannot be driven by different frequencies
-  // pinMode(this->stepPin, OUTPUT);
   ledcAttachPin(this->stepPin, this->index * 2);
   // Frequency is arbitrary on init and will be set
   // with the velocity
   ledcSetup(this->index * 2, 1000, 8);
 }
 
-void StepperMotor::setVelocity(float newVelocity) {
-  this->velocity = newVelocity;
-  ledcWriteTone(this->index * 2, (int)(1000000/this->velocity));
+void StepperMotor::setVelocity(float velocity) {
+  this->velocity = velocity;
+  this->frequency = (float)1000000/this->velocity;
+  // Set the direction
+  digitalWrite(this->dirPin, velocity > 0 ? this->index : (int)!(bool)this->index);
+  // Velocity specifies the delay in microseconds
+  ledcWriteTone(this->index * 2, (int)this->frequency);
 }
 
 // Do one step
@@ -70,12 +74,9 @@ void StepperMotor::step() {
 }
 
 // Make the string for a certain motor longer/shorter
-int StepperMotor::travel(int distance) {
+int StepperMotor::start() {
   int stepper = this->index;
   float velocity = this->velocity;
-
-  // Set the direction
-  digitalWrite(this->dirPin, distance > 0 ? stepper : (int)!(bool)stepper);
 
   // // Calculate and do steps
   // // The direction is already set, so the prefix can be
@@ -93,12 +94,12 @@ int StepperMotor::travel(int distance) {
   //   vTaskDelayUntil(&x_last_wake_time, frequency);
   // }
 
-  // The dutyCycle does not have to be that
+  // The dutyCycle does not have to be that accurate
   ledcWrite(stepper * 2, round(2/velocity * 255));
   return 0;
 }
 
-// Stop the motor
+// Stop the motor (= set dutyCycle to 0)
 int StepperMotor::stop() {
   ledcWrite(this->index * 2, 0);
 }

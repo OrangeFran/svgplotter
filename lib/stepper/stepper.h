@@ -6,17 +6,17 @@ extern int dirPins[2];
 extern int stepPins[2];
 
 class StepperMotor {
-  private:
+  public:
     int index; // left -> 0, right -> 1
     float velocity;
     int dirPin;
-  public:
     int stepPin;
+    float frequency;
     // Constructor
     StepperMotor(int, int, int);
     void step(void);
     void setVelocity(float);
-    int travel(int distance);
+    int start();
     int stop(void);
 };
 
