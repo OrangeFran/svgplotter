@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 #include "joystick.h"
-#include "Move.h"
+#include "stepper.h"
 
 int joyPins[3] = {34,35,26};
 

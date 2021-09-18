@@ -1,3 +1,4 @@
+// #include <pthread.h>
 #include <thread>
 #include <Arduino.h>
 
@@ -6,83 +7,63 @@
 #include "parser.h"
 
 // The whiteboard (in mm)
-int boardWidth = 1930;
-int boardHeight = 1170;
+float boardWidth = 1930.0;
+float boardHeight = 1150.0;
 // The current position (s1, s2)
 // s1 = left string, s2 = right string
-int position[2] = {1516, 1516};
+float initialPosition = sqrt(pow(boardWidth/2, 2) + pow(boardHeight, 2));
+float position[2] = {initialPosition, initialPosition};
 
-float baseVelocity = 1.0;
-// TODO: measure/calculate exact mm per step
-// float perstep = 0.019625; // 0.07925;
-
-// StepperMotor stepper1;
-// StepperMotor stepper2;
-
-// Pins to set direction
-int dirPins[] = {16, 18}; // (left, right)
-// Pins to move
-int stepPins[] = {17, 19}; // (left, right)
+float baseVelocity = 500.0;
 
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
 
-// int old_go_to(int x, int y) {
-//   // Calculate the new length of the string
-//   int new_s1 = sqrt(pow(width/2 + x, 2) + pow(height - y, 2));
-//   int new_s2 = sqrt(pow(width/2 - x, 2) + pow(height - y, 2));
-//   // Calculate the necessary movement
-//   int distance_s1 = new_s1 - position[0];
-//   int distance_s2 = new_s2 - position[1];
-//   // Update the position
-//   position[0] = new_s1;
-//   position[1] = new_s2;
-// 
-//   Serial.printf("-> %d, %d\n", distance_s1, distance_s2);
-//   Serial.printf("position: %d, %d\n", position[0], position[1]);
-// 
-//   struct travel_args to_travel_s1 = {distance_s1, 0};
-//   struct travel_args to_travel_s2 = {distance_s2, 1};
-//   travel(&to_travel_s1);
-//   travel(&to_travel_s2);
-//   return 0;
-// }
 
-int goTo(int x, int y) {
-  Serial.printf("Going to (%d, %d) ...", x, y);
+typedef struct Point {
+  float x;
+  float y;
+} Point;
+
+// Move to a coordinate
+int goTo(Point p) {
+  Serial.printf("Going to (%d, %d) ...", p.x, p.y);
 
   // Calculate the new length of the string with the
   // Pythagoras formulae
-  int newS1 = sqrt(pow(boardWidth/2 + x, 2) + pow(boardHeight - y, 2));
-  int newS2 = sqrt(pow(boardWidth/2 - x, 2) + pow(boardHeight - y, 2));
+  float newS1 = sqrt(pow(boardWidth/2 + p.x, 2) + pow(boardHeight - p.y, 2));
+  float newS2 = sqrt(pow(boardWidth/2 - p.x, 2) + pow(boardHeight - p.y, 2));
   // Calculate the necessary movement
-  int distanceS1 = newS1 - position[0];
-  int distanceS2 = newS2 - position[1];
+  float distanceS1 = newS1 - position[0];
+  float distanceS2 = newS2 - position[1];
   // Update the position
   position[0] = newS1;
   position[1] = newS2;
 
-  Serial.printf("Distances: %d, %d\n", distanceS1, distanceS2);
-  Serial.printf("New position:  %d, %d\n", position[0], position[1]);
+  Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+  Serial.printf("New position:  %f, %f\n", position[0], position[1]);
 
   // Calculate the needed velocities
   float velocityS1, velocityS2;
+  // The velocity for the shorter distance will
+  // be a fraction of the base velocity of the longer distance
   if (distanceS1 < distanceS2) {
     velocityS1 = baseVelocity;
-    velocityS2 = (float)abs(distanceS1) / (float)abs(distanceS2) * velocityS1;
+    velocityS2 = distanceS1 / distanceS2 * baseVelocity;
   } else {
     velocityS2 = baseVelocity;
-    velocityS1 = (float)abs(distanceS2) / (float)abs(distanceS1) * velocityS2;
+    velocityS1 = distanceS2 / distanceS1 * baseVelocity;
   }
 
   Serial.printf("Velocities: %f, %f\n", velocityS1, velocityS2);
 
+  stepper1.setVelocity(velocityS1);
+  stepper2.setVelocity(velocityS2);
+
   // // Spawn two threads, one for each motor
   // pthread_t threads[2];
-  // stepper1.setVelocity(velocityS1);
-  // stepper2.setVelocity(velocityS2);
-  // int creationS1 = pthread_create(&threads[0], NULL, stepper1.travel, &distanceS1);
-  // int creationS2 = pthread_create(&threads[1], NULL, stepper2.travel, &distanceS2);
+  // int creationS1 = pthread_create(&threads[0], NULL, [](int d) { stepper1.travel(d); }, &distanceS1);
+  // int creationS2 = pthread_create(&threads[1], NULL, [](int d) { stepper2.travel(d); }, &distanceS2);
   // if (creationS1 != 0 || creationS2 != 0) {
   //   Serial.println("Failed to create threads!");
   //   return 1;
@@ -98,30 +79,77 @@ int goTo(int x, int y) {
   //   return 1;
   // }
 
-  stepper1.setVelocity(velocityS1);
-  stepper2.setVelocity(velocityS2);
+  // Calculate and do steps
+  // The direction is already set, so the prefix can be
+  // removed with abs()
+  float steps = abs(distanceS1)/perstep;
 
-  // Wrap the member functions to fill the requirement for a
-  // static non-member function
-  std::thread threadS1([](int d) { stepper1.travel(d); }, distanceS1);
-  std::thread threadS2([](int d) { stepper2.travel(d); }, distanceS2);
+  // // Wrap the member functions to fill the requirement for a
+  // // static non-member function
+  // Serial.println("Starting threads ...");
+  // std::thread threadS1([](int d) { stepper1.travel(d); }, distanceS1);
+  // std::thread threadS2([](int d) { stepper2.travel(d); }, distanceS2);
+  // Serial.println("Waiting for threads ...");
+  // threadS1.join();
+  // threadS2.join();
 
-  threadS1.join();
-  threadS2.join();
+  // // Use timer interrupts to stop the pwm signal
+  // hw_timer_t *timerS1 = timerBegin(0, 80, true);
+  // hw_timer_t *timerS2 = timerBegin(0, 80, true);
+  // timerAttachInterrupt(timerS1, &[](){ stepper1.stop(); }, true);
+  // timerAttachInterrupt(timerS2, &[](){ stepper2.stop(); }, true);
+  // timerAlarmWrite(timerS1, velocityS1 * steps, false);
+  // timerAlarmWrite(timerS2, velocityS2 * steps, false);
 
+  stepper1.start();
+  // timerAlarmEnable(timerS1);
+  stepper2.start();
+  // timerAlarmEnable(timerS2);
+
+  delay((int)(stepper1.frequency/steps));
+
+  stepper1.stop();
+  stepper2.stop();
+
+  return 0;
+}
+
+// Implementation of De Casteljau's algorithm
+// parametric function with `t` -> move t from 0 to 1
+// `B(t) = (1 - t)^2 P_0 + 2t (1 - t) P_1 + t^2 P_2`
+int bezierCurve(Point p0, Point p1, Point p2) {
+  int accuracy = 50;
+  // Move t from 0 to 1
+  // accuracy defines the amount of steps between
+  int x, y;
+  for (int t = 0; t <= 1; t += 1/accuracy) {
+    x = pow((1 - t), 2) * p0.x + 2 * t * (1 - t) * p1.x + pow(t, 2) * p2.x;
+    y = pow((1 - t), 2) * p0.y + 2 * t * (1 - t) * p1.y + pow(t, 2) * p2.y;
+    if (goTo(x, y) != 0) {
+      Serial.println("Failed to move!");
+    }
+  }
   return 0;
 }
 
 void setup() {
   Serial.begin(9600);
   setMotorState(true);
-  // Move to a coordinate
-  if (goTo(200, 100) != 0) {
-    Serial.println("Could not move to coordinate!");
-  }
+  // A simple square
+  delay(5000);
+  goTo(Point{0, 100});
+  delay(5000);
+  goTo(Point{100, 100});
+  delay(5000);
+  goTo(Point{100, 0});
+  delay(5000);
+  goTo(Point{0, 0});
 }
 
 void loop() {
+  // Deattach pins
+  ledcDetachPin(stepper1.stepPin);
+  ledcDetachPin(stepper2.stepPin);
   // Fall back to joystick control
   joystick();
 }
