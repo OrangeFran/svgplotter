@@ -2,17 +2,17 @@
 // Only the <path> and <svg> elements are needed
 
 #include <string>
-#include <cstring>
 #include <sstream>
+#include <iostream>
 
 const std::string testString =
   "<?xml version=\"1.0\" ?>\n"
   "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
-  "<path d=\"M 100 100\">\n"
+  "<path d=\"M 100 100\" blabla=\"error\">\n"
   "</svg>";
 
 struct svg {
-  int viewBox[];
+  int viewBox[4];
   // The path will be parsed and executed simultaneously
   std::string path;
 };
@@ -24,15 +24,28 @@ std::string extractValue(std::string attr, std::string tag) {
   std::string res;
   // Loop until the attribute is found
   while (true) {
-    tag = tag.substr(tag.find(' '), tag.length());
+    // .substr includes the starting index -> add 1
+    tag = tag.substr(tag.find(' ') + 1, -1);
+    std::cout << "Checking '" << tag << "'" << std::endl;
     // Check if the substr starts with the attribute
-    if (tag.rfind(attr, 0)) {
-      int start = res.find('"');
-      int end = res.rfind('"', start + 1);
-      // .substr includes the starting index -> add 1
-      return res.substr(start + 1, end);
+    if (tag.rfind(attr, 0) != -1) {
+      int start = tag.find('"');
+      // Is there an easier way?
+      res = tag.substr(start + 1, tag.substr(start + 1, -1).find('"'));
+      break;
     }
   }
+  return res;
+}
+
+int main() {
+  std::string tag = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n";
+  std::string res = extractValue("viewBox", tag);
+  std::cout << "'" << res << "'" << std::endl;
+
+  std::string tag2 = "<path d=\"M 100 100\" blabla=\"error\">\n";
+  std::string res2 = extractValue("d", tag2);
+  std::cout << "'" << res2 << "'" << std::endl;
 }
 
 // // Get the root svg tag and the viewBox

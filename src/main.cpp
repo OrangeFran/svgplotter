@@ -19,7 +19,6 @@ float baseVelocity = 500.0;
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
 
-
 typedef struct Point {
   float x;
   float y;
@@ -27,7 +26,7 @@ typedef struct Point {
 
 // Move to a coordinate
 int goTo(Point p) {
-  Serial.printf("Going to (%d, %d) ...", p.x, p.y);
+  Serial.printf("Going to (%f, %f) ...", p.x, p.y);
 
   // Calculate the new length of the string with the
   // Pythagoras formulae
@@ -121,11 +120,11 @@ int bezierCurve(Point p0, Point p1, Point p2) {
   int accuracy = 50;
   // Move t from 0 to 1
   // accuracy defines the amount of steps between
-  int x, y;
+  float x, y;
   for (int t = 0; t <= 1; t += 1/accuracy) {
     x = pow((1 - t), 2) * p0.x + 2 * t * (1 - t) * p1.x + pow(t, 2) * p2.x;
     y = pow((1 - t), 2) * p0.y + 2 * t * (1 - t) * p1.y + pow(t, 2) * p2.y;
-    if (goTo(x, y) != 0) {
+    if (goTo(Point{x, y}) != 0) {
       Serial.println("Failed to move!");
     }
   }
