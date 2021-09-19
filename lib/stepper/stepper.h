@@ -8,10 +8,9 @@ extern int stepPins[2];
 class StepperMotor {
   public:
     int index; // left -> 0, right -> 1
-    float velocity;
+    float velocity; // sps
     int dirPin;
     int stepPin;
-    float frequency;
     // Constructor
     StepperMotor(int, int, int);
     void step(void);

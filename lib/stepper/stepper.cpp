@@ -57,18 +57,31 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   ledcAttachPin(this->stepPin, this->index * 2);
   // Frequency is arbitrary on init and will be set
   // with the velocity
-  ledcSetup(this->index * 2, 1000, 8);
+  ledcSetup(this->index * 2, 1000, 14);
 }
 
 void StepperMotor::setVelocity(float velocity) {
-  // Velocity (delay in µs between steps) and freq in Hz
+  // Velocity in sps
   this->velocity = velocity;
-  this->frequency = (float)1000000/this->velocity;
 
   // Set the direction
   digitalWrite(this->dirPin, velocity > 0 ? this->index : (int)!(bool)this->index);
   // Velocity specifies the delay in microseconds
-  ledcWriteTone(this->index * 2, (int)this->frequency);
+  ledcWriteTone(this->index * 2, (int)this->velocity);
+
+  // Change the resolution
+  // This is necessary because the available resolution
+  // reduces if the frequency increases
+  //
+  // Max resolution possible for f: f(f) = log_2(80MHz/f)
+  //   for f = 1 -> ~26
+  //
+  // Formulae:
+  //   (f/500000) * (2**x - 1) = 1
+  //   => x = 1.4427 * ln(1 + 500000/f)
+  //
+  // Delay of 2 microseconds = freq of 500000Hz
+  // int resolution = round(1.4427 * log(1.0 + (500000.0/this->velocity)));
 }
 
 // Do one step
@@ -80,17 +93,14 @@ void StepperMotor::step() {
 
 // Make the string for a certain motor longer/shorter
 int StepperMotor::start() {
-  int stepper = this->index;
-  float velocity = this->velocity;
-
   // // Calculate and do steps
   // // The direction is already set, so the prefix can be
   // // removed with abs()
   // int steps = abs(distance)/perstep;
 
-  // With current frequency: One tick = one millisecond
-  // TickType_t x_last_wake_time = xTaskGetTickCount();
-  // TickType_t frequency = velocity * portTICK_PERIOD_MS;
+  // // With current frequency: One tick = one millisecond
+  // // TickType_t x_last_wake_time = xTaskGetTickCount();
+  // // TickType_t frequency = velocity * portTICK_PERIOD_MS;
   // for (int i = 0; i < steps; i++) {
   //   this->step();
   //   // delayMicroseconds will not work,
@@ -99,8 +109,11 @@ int StepperMotor::start() {
   //   vTaskDelayUntil(&x_last_wake_time, frequency);
   // }
 
-  // The dutyCycle does not have to be that accurate
-  ledcWrite(stepper * 2, round(2/velocity * 255));
+  // The dutyCycle does not have to be accurate to the point
+  // Delay of 2 microseconds = freq of 500000Hz
+  int dutyCycle = round(this->velocity/500000.0 * 16383.0);
+  // Use one if dutyCycle is too small
+  ledcWrite(this->index * 2, dutyCycle == 0 ? 1 : dutyCycle);
   return 0;
 }
 

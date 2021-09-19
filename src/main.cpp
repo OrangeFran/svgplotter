@@ -13,7 +13,9 @@ float boardHeight = 1150.0;
 float initialPosition = sqrt(pow(boardWidth/2, 2) + pow(boardHeight, 2));
 float position[2] = {initialPosition, initialPosition};
 
-float baseVelocity = 500.0;
+// In steps per second (sps)
+// Delay of 500 µs in rps: 2000 sps
+float baseVelocity = 2000.0;
 
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
@@ -54,7 +56,7 @@ int goTo(Point p) {
     velocityS1 = distanceS2 / distanceS1 * baseVelocity;
   }
 
-  Serial.printf("Velocities: %f, %f\n", velocityS1, velocityS2);
+  Serial.printf("Velocities (sps): %f, %f\n", velocityS1, velocityS2);
 
   stepper1.setVelocity(velocityS1);
   stepper2.setVelocity(velocityS2);
@@ -81,7 +83,7 @@ int goTo(Point p) {
   // Calculate and do steps
   // The direction is already set, so the prefix can be
   // removed with abs()
-  float steps = abs(distanceS1)/perstep;
+  float stepsS1 = abs(distanceS1)/perstep;
 
   // // Wrap the member functions to fill the requirement for a
   // // static non-member function
@@ -105,7 +107,7 @@ int goTo(Point p) {
   stepper2.start();
   // timerAlarmEnable(timerS2);
 
-  delay((int)(stepper1.frequency/steps));
+  delay((int)(stepsS1/velocityS1));
 
   stepper1.stop();
   stepper2.stop();
@@ -120,7 +122,7 @@ int bezierCurve(Point p0, Point p1, Point p2) {
   int accuracy = 50;
   // Move t from 0 to 1
   // accuracy defines the amount of steps between
-  int x, y;
+  float x, y;
   for (int t = 0; t <= 1; t += 1/accuracy) {
     x = pow((1 - t), 2) * p0.x + 2 * t * (1 - t) * p1.x + pow(t, 2) * p2.x;
     y = pow((1 - t), 2) * p0.y + 2 * t * (1 - t) * p1.y + pow(t, 2) * p2.y;
