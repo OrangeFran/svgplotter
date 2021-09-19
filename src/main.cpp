@@ -124,7 +124,7 @@ int bezierCurve(Point p0, Point p1, Point p2) {
   for (int t = 0; t <= 1; t += 1/accuracy) {
     x = pow((1 - t), 2) * p0.x + 2 * t * (1 - t) * p1.x + pow(t, 2) * p2.x;
     y = pow((1 - t), 2) * p0.y + 2 * t * (1 - t) * p1.y + pow(t, 2) * p2.y;
-    if (goTo(x, y) != 0) {
+    if (goTo(Point{x, y}) != 0) {
       Serial.println("Failed to move!");
     }
   }

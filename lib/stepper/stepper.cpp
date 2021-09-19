@@ -31,7 +31,7 @@ void setMotorState(bool on) {
   motorState = on;
 }
 
-// OLD function still needed for lib/joystick
+// Old function still needed for lib/joystick
 // Do one step with the specified motor
 void step(int stepper) {
   digitalWrite(stepPins[stepper], HIGH);
@@ -41,12 +41,15 @@ void step(int stepper) {
 
 // Constructor
 StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
+  // Pins
   this->index = index; // 0 / 1
   this->dirPin = dirPin;
   this->stepPin = stepPin;
+
   // Set the direction pin to OUTPUT
   pinMode(this->dirPin, OUTPUT);
   pinMode(this->stepPin, OUTPUT);
+
   // Attach a channel to the stepping pin 
   // There are only 8 timers for 16 channels
   // -> subsequent channels use the same timer
@@ -58,8 +61,10 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
 }
 
 void StepperMotor::setVelocity(float velocity) {
+  // Velocity (delay in µs between steps) and freq in Hz
   this->velocity = velocity;
   this->frequency = (float)1000000/this->velocity;
+
   // Set the direction
   digitalWrite(this->dirPin, velocity > 0 ? this->index : (int)!(bool)this->index);
   // Velocity specifies the delay in microseconds
