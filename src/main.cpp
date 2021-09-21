@@ -28,7 +28,7 @@ typedef struct Point {
 
 // Move to a coordinate
 int goTo(Point p) {
-  Serial.printf("Going to (%d, %d) ...", p.x, p.y);
+  Serial.printf("Going to (%f, %f) ...", p.x, p.y);
 
   // Calculate the new length of the string with the
   // Pythagoras formulae
@@ -48,18 +48,18 @@ int goTo(Point p) {
   float velocityS1, velocityS2;
   // The velocity for the shorter distance will
   // be a fraction of the base velocity of the longer distance
-  if (distanceS1 < distanceS2) {
+  if (abs(distanceS1) > abs(distanceS2)) {
     velocityS1 = baseVelocity;
-    velocityS2 = distanceS1 / distanceS2 * baseVelocity;
+    velocityS2 = abs(distanceS2/distanceS1) * baseVelocity;
   } else {
     velocityS2 = baseVelocity;
-    velocityS1 = distanceS2 / distanceS1 * baseVelocity;
+    velocityS1 = abs(distanceS1/distanceS2) * baseVelocity;
   }
 
   Serial.printf("Velocities (sps): %f, %f\n", velocityS1, velocityS2);
 
-  stepper1.setVelocity(velocityS1);
-  stepper2.setVelocity(velocityS2);
+  stepper1.setVelocity(velocityS1, distanceS1 < 0);
+  stepper2.setVelocity(velocityS2, distanceS2 < 0);
 
   // // Spawn two threads, one for each motor
   // pthread_t threads[2];
@@ -107,7 +107,9 @@ int goTo(Point p) {
   stepper2.start();
   // timerAlarmEnable(timerS2);
 
-  delay((int)(stepsS1/velocityS1));
+  Serial.printf("Waiting with %f, %f ...\n", stepsS1, velocityS1);
+  delayMicroseconds(round(stepsS1/velocityS1 * 1000000));
+  Serial.println("Stopped waiting!");
 
   stepper1.stop();
   stepper2.stop();
@@ -119,16 +121,19 @@ int goTo(Point p) {
 // parametric function with `t` -> move t from 0 to 1
 // `B(t) = (1 - t)^2 P_0 + 2t (1 - t) P_1 + t^2 P_2`
 int bezierCurve(Point p0, Point p1, Point p2) {
-  int accuracy = 50;
+  float accuracy = 5.0;
   // Move t from 0 to 1
-  // accuracy defines the amount of steps between
+  // `accuracy` defines the amount of steps between
   float x, y;
-  for (int t = 0; t <= 1; t += 1/accuracy) {
-    x = pow((1 - t), 2) * p0.x + 2 * t * (1 - t) * p1.x + pow(t, 2) * p2.x;
-    y = pow((1 - t), 2) * p0.y + 2 * t * (1 - t) * p1.y + pow(t, 2) * p2.y;
+  for (float t = 1/accuracy; t <= 1.0; t += 1.0/accuracy) {
+    x = pow((1.0 - t), 2) * p0.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
+    y = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
+    Serial.printf("Points: %f, %f", x, y);
+    Serial.printf("T: %f", t);
     if (goTo(Point{x, y}) != 0) {
       Serial.println("Failed to move!");
     }
+    delay(100);
   }
   return 0;
 }
@@ -136,21 +141,28 @@ int bezierCurve(Point p0, Point p1, Point p2) {
 void setup() {
   Serial.begin(9600);
   setMotorState(true);
-  // A simple square
+
+  // // A simple square
+  // delay(5000);
+  // goTo(Point{0, 100});
+  // delay(5000);
+  // goTo(Point{100, 100});
+  // delay(5000);
+  // goTo(Point{100, 0});
+  // delay(5000);
+  // goTo(Point{0, 0});
   delay(5000);
-  goTo(Point{0, 100});
-  delay(5000);
-  goTo(Point{100, 100});
-  delay(5000);
-  goTo(Point{100, 0});
+  bezierCurve(Point{0, 0}, Point{0, 100}, Point{100, 100});
   delay(5000);
   goTo(Point{0, 0});
+
+  // Deattach pins
+  Serial.println("Enabling joystick ...");
+  ledcDetachPin(stepper1.stepPin);
+  ledcDetachPin(stepper2.stepPin);
 }
 
 void loop() {
-  // Deattach pins
-  ledcDetachPin(stepper1.stepPin);
-  ledcDetachPin(stepper2.stepPin);
   // Fall back to joystick control
   joystick();
 }

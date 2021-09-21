@@ -60,12 +60,12 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   ledcSetup(this->index * 2, 1000, 14);
 }
 
-void StepperMotor::setVelocity(float velocity) {
+void StepperMotor::setVelocity(float velocity, bool shorter) {
   // Velocity in sps
   this->velocity = velocity;
 
   // Set the direction
-  digitalWrite(this->dirPin, velocity > 0 ? this->index : (int)!(bool)this->index);
+  digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
   // Velocity specifies the delay in microseconds
   ledcWriteTone(this->index * 2, (int)this->velocity);
 
