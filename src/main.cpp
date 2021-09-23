@@ -37,26 +37,32 @@ int goTo(Point p) {
   // Calculate the necessary movement
   float distanceS1 = newS1 - position[0];
   float distanceS2 = newS2 - position[1];
+
+  // TODO: round() or int()
+  int stepsS1 = round(abs(distanceS1)/perstep);
+  int stepsS2 = round(abs(distanceS2)/perstep);
+
   // Update the position
   position[0] = newS1;
   position[1] = newS2;
 
+  Serial.printf("Steps: %f, %f\n", stepsS1, stepsS2);
   Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
   Serial.printf("New position:  %f, %f\n", position[0], position[1]);
 
   // Calculate the needed velocities
-  float velocityS1, velocityS2;
+  int velocityS1, velocityS2;
   // The velocity for the shorter distance will
   // be a fraction of the base velocity of the longer distance
-  if (abs(distanceS1) > abs(distanceS2)) {
+  if (stepsS1 > stepsS2) {
     velocityS1 = baseVelocity;
-    velocityS2 = abs(distanceS2/distanceS1) * baseVelocity;
+    velocityS2 = round((float)(stepsS2/stepsS1) * baseVelocity);
   } else {
     velocityS2 = baseVelocity;
-    velocityS1 = abs(distanceS1/distanceS2) * baseVelocity;
+    velocityS1 = round((float)(stepsS1/stepsS2) * baseVelocity);
   }
 
-  Serial.printf("Velocities (sps): %f, %f\n", velocityS1, velocityS2);
+  Serial.printf("Velocities (sps): %d, %d\n", velocityS1, velocityS2);
 
   stepper1.setVelocity(velocityS1, distanceS1 < 0);
   stepper2.setVelocity(velocityS2, distanceS2 < 0);
@@ -79,11 +85,6 @@ int goTo(Point p) {
   //   Serial.println("Failed to move!");
   //   return 1;
   // }
-
-  // Calculate and do steps
-  // The direction is already set, so the prefix can be
-  // removed with abs()
-  float stepsS1 = abs(distanceS1)/perstep;
 
   // // Wrap the member functions to fill the requirement for a
   // // static non-member function
@@ -108,7 +109,7 @@ int goTo(Point p) {
   // timerAlarmEnable(timerS2);
 
   Serial.printf("Waiting with %f, %f ...\n", stepsS1, velocityS1);
-  delayMicroseconds(round(stepsS1/velocityS1 * 1000000));
+  delayMicroseconds(round((float)stepsS1/(float)velocityS1 * 1000000));
   Serial.println("Stopped waiting!");
 
   stepper1.stop();

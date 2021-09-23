@@ -14,7 +14,8 @@ class StepperMotor {
     // Constructor
     StepperMotor(int, int, int);
     void step(void);
-    void setVelocity(float, bool);
+    void setVelocity(int, bool);
+    // PWM signal controls
     int start(void);
     int stop(void);
 };
