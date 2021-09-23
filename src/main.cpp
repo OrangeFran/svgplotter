@@ -4,6 +4,7 @@
 
 #include "joystick.h"
 #include "stepper.h"
+#include "parser.h"
 
 // The whiteboard (in mm)
 float boardWidth = 1930.0;
@@ -19,7 +20,6 @@ float baseVelocity = 2000.0;
 
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
-
 
 typedef struct Point {
   float x;
@@ -122,10 +122,10 @@ int goTo(Point p) {
 // parametric function with `t` -> move t from 0 to 1
 // `B(t) = (1 - t)^2 P_0 + 2t (1 - t) P_1 + t^2 P_2`
 int bezierCurve(Point p0, Point p1, Point p2) {
-  float accuracy = 5.0;
-  // Move t from 0 to 1
   // `accuracy` defines the amount of steps between
+  float accuracy = 5.0;
   float x, y;
+  // Move parameter t from 0.0 to 1.0
   for (float t = 1/accuracy; t <= 1.0; t += 1.0/accuracy) {
     x = pow((1.0 - t), 2) * p0.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
     y = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
