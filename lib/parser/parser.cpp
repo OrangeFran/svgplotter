@@ -3,18 +3,7 @@
 
 #include <string>
 #include <iostream>
-
-const std::string testString =
-  "<?xml version=\"1.0\" ?>\n"
-  "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
-  "<path color=\"blue\" d=\"M 100 100\" blabla=\"error\">\n"
-  "</svg>";
-
-struct SVG {
-  std::string viewBox;
-  // The paths will be parsed and executed simultaneously
-  std::string path;
-};
+#include <parser.h>
 
 // // Extracts the value of attribute ATTR from a tag
 // // Example: "viewBox" from <svg viewBox="0 0 100 100">
@@ -144,22 +133,22 @@ struct SVG parseSVG(std::string str) {
   return svg;
 }
 
-int main() {
-  // // Test 1
-  // std::string tag = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n";
-  // std::string res = extractValue("viewBox", tag);
-  // // "0 0 500 500" is expected
-  // std::cout << "'" << res << "'" << std::endl;
-
-  // // Test 2
-  // std::string tag2 = "<path d=\"M 100 100\" blabla=\"error\">\n";
-  // std::string res2 = extractValue("d", tag2);
-  // // "M 100 100" is expected
-  // std::cout << "'" << res2 << "'" << std::endl;
-
-  // Test 1
-  struct SVG svg = parseSVG(testString);
-  std::cout << "svg.viewBox: '" << svg.viewBox << "'" << std::endl;
-  std::cout << "path.d: '" << svg.path << "'" << std::endl;
-  return 0;
-}
+// int main() {
+//   // // Test 1
+//   // std::string tag = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n";
+//   // std::string res = extractValue("viewBox", tag);
+//   // // "0 0 500 500" is expected
+//   // std::cout << "'" << res << "'" << std::endl;
+// 
+//   // // Test 2
+//   // std::string tag2 = "<path d=\"M 100 100\" blabla=\"error\">\n";
+//   // std::string res2 = extractValue("d", tag2);
+//   // // "M 100 100" is expected
+//   // std::cout << "'" << res2 << "'" << std::endl;
+// 
+//   // Test 1
+//   struct SVG svg = parseSVG(testString);
+//   std::cout << "svg.viewBox: '" << svg.viewBox << "'" << std::endl;
+//   std::cout << "path.d: '" << svg.path << "'" << std::endl;
+//   return 0;
+// }
