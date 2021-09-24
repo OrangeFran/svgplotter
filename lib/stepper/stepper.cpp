@@ -4,13 +4,15 @@
 // #define CONFIG_FREERTOS_HZ 1000
 
 // TODO: measure/calculate exact mm per step
-float perstep = 0.009817477;
+// Current number based on trial and error
+float perstep = 0.01;
+                // 0.009817477;
                 // 0.019625;
                 // 0.07925;
 
-// Pins to move and set direction (left, right)
-int stepPins[2] = {17, 19};
+// Pins to set direction and move: { leftPin, rightPin }
 int dirPins[2] = {16, 18};
+int stepPins[2] = {17, 19};
 
 // Pins to control state of motors
 int enPin = 12;
@@ -20,7 +22,7 @@ int sleepPin = 32;
 // Global turned on state of motors
 bool motorState = false;
 
-// Turn the motors on
+// Turn the controlboard, motors on
 void setMotorState(bool on) {
   pinMode(enPin, OUTPUT);
   digitalWrite(enPin, !on);
@@ -60,7 +62,7 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   ledcSetup(this->index * 2, 1000, 14);
 }
 
-void StepperMotor::setVelocity(float velocity, bool shorter) {
+void StepperMotor::setVelocity(int velocity, bool shorter) {
   // Velocity in sps
   this->velocity = velocity;
 

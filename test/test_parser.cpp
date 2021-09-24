@@ -1,6 +1,6 @@
 #include <string>
 #include <unity.h>
-#include <parser.h>
+#include "parser.h"
 
 const std::string testStringValid =
   "<?xml version=\"1.0\" ?>\n"
@@ -14,14 +14,8 @@ void test_valid() {
   TEST_ASSERT_EQUAL_STRING("M 100 100", svg.path.c_str());
 }
 
-// void setup() {
-//   UNITY_BEGIN();
-//   RUN_TEST(test_valid);
-//   UNITY_END();
-// }
-//
-// void loop() {}
-
+// Run tests on native os
+// ```pio test -e native -v```
 int main() {
   UNITY_BEGIN();
   RUN_TEST(test_valid);
