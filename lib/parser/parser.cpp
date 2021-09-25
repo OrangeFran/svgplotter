@@ -2,6 +2,7 @@
 // Only the <path> and <svg> elements are needed
 
 #include <string>
+#include <cstdlib>
 #include <iostream>
 #include "parser.h"
 
@@ -59,6 +60,7 @@ struct SVG parseSVG(std::string str) {
       }
       escaped = false;
     }
+
     switch (state) {
       case PARSER_findTag:
         if (c == '<') {
@@ -68,7 +70,6 @@ struct SVG parseSVG(std::string str) {
         break;
       case PARSER_getTag:
         if (c == ' ') {
-          // To implement more, just add if statements
           for (int i = 0; i < 2; i++) {
             size_t p = attributes[i].find('.');
             if (buff == attributes[i].substr(0, p)) {
@@ -111,7 +112,15 @@ struct SVG parseSVG(std::string str) {
           // TODO: Handle edge case that attribute value is empty -> infinite loop
           if (buff != "") {
             if (attr == "viewBox") {
-              svg.viewBox = buff;
+              // Convert the buff to a list of ints
+              int count = 0;
+              int spaceIndex = 0;
+              while (count < 4) {
+                spaceIndex = buff.find(' ');
+                svg.viewBox[count] = strtof(buff.substr(0, spaceIndex).c_str(), NULL);
+                buff = buff.substr(spaceIndex + 1, -1);
+                count++;
+              }
               state = PARSER_findTag;
               attr = "";
             } else if (attr == "d") {
@@ -132,6 +141,12 @@ struct SVG parseSVG(std::string str) {
 
   return svg;
 }
+
+// const std::string testStringValid =
+//   "<?xml version=\"1.0\" ?>\n"
+//   "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+//     "<path color=\"blue\" d=\"M 100 100\">\n"
+//   "</svg>";
 
 // int main() {
 //   // // Test 1

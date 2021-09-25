@@ -1,5 +1,5 @@
 struct SVG {
-  std::string viewBox;
+  float viewBox[4];
   // The paths will be parsed and executed simultaneously
   std::string path;
 };
