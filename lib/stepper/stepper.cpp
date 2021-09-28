@@ -113,7 +113,7 @@ int StepperMotor::start() {
 
   // The dutyCycle does not have to be accurate to the point
   // Delay of 2 microseconds = freq of 500000Hz
-  int dutyCycle = round(this->velocity/500000.0 * 16383.0);
+  int dutyCycle = round((float)this->velocity/500000.0 * 16383.0);
   // Use one if dutyCycle is too small
   ledcWrite(this->index * 2, dutyCycle == 0 ? 1 : dutyCycle);
   return 0;
