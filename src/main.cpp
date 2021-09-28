@@ -8,7 +8,7 @@
 
 // The whiteboard (in mm)
 float boardWidth = 1930.0;
-float boardHeight = 1150.0;
+float boardHeight = 1170.0;
 // The current position (s1, s2)
 // s1 = left string, s2 = right string
 float initialPosition = sqrt(pow(boardWidth/2, 2) + pow(boardHeight, 2));
@@ -46,7 +46,7 @@ int goTo(Point p) {
   position[0] = newS1;
   position[1] = newS2;
 
-  Serial.printf("Steps: %f, %f\n", stepsS1, stepsS2);
+  Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
   Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
   Serial.printf("New position:  %f, %f\n", position[0], position[1]);
 
@@ -56,16 +56,22 @@ int goTo(Point p) {
   // be a fraction of the base velocity of the longer distance
   if (stepsS1 > stepsS2) {
     velocityS1 = baseVelocity;
-    velocityS2 = round((float)(stepsS2/stepsS1) * baseVelocity);
+    velocityS2 = round((float)stepsS2/(float)stepsS1 * baseVelocity);
   } else {
     velocityS2 = baseVelocity;
-    velocityS1 = round((float)(stepsS1/stepsS2) * baseVelocity);
+    velocityS1 = round((float)stepsS1/(float)stepsS2 * baseVelocity);
   }
 
   Serial.printf("Velocities (sps): %d, %d\n", velocityS1, velocityS2);
 
   stepper1.setVelocity(velocityS1, distanceS1 < 0);
   stepper2.setVelocity(velocityS2, distanceS2 < 0);
+
+  // NOTE: Other approaches tried:
+  //         - seperate threads for each motor
+  //           -> failed, because `vTaskDelay` is only able to
+  //              delay with a precision of 1ms 
+
 
   // // Spawn two threads, one for each motor
   // pthread_t threads[2];
@@ -95,25 +101,36 @@ int goTo(Point p) {
   // threadS1.join();
   // threadS2.join();
 
-  // // Use timer interrupts to stop the pwm signal
-  // hw_timer_t *timerS1 = timerBegin(0, 80, true);
-  // hw_timer_t *timerS2 = timerBegin(0, 80, true);
-  // timerAttachInterrupt(timerS1, &[](){ stepper1.stop(); }, true);
-  // timerAttachInterrupt(timerS2, &[](){ stepper2.stop(); }, true);
-  // timerAlarmWrite(timerS1, velocityS1 * steps, false);
-  // timerAlarmWrite(timerS2, velocityS2 * steps, false);
+  int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
+  int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
+
+  Serial.printf("Delay time for S1: %d\n", delayTimeS1);
+  Serial.printf("Delay time for S2: %d\n", delayTimeS2);
 
   stepper1.start();
-  // timerAlarmEnable(timerS1);
   stepper2.start();
-  // timerAlarmEnable(timerS2);
 
-  Serial.printf("Waiting with %f, %f ...\n", stepsS1, velocityS1);
-  delayMicroseconds(round((float)stepsS1/(float)velocityS1 * 1000000));
-  Serial.println("Stopped waiting!");
+  // NOTE: For long distances, the delay times differ heavily.
+  //       Reason: The velocity needs to be specified in Hz. If the
+  //       can only be specified as an integer, one can loose/gain up
+  //       to 0.5 steps per second. This is the reason for the
+  //       two `delayMicroseconds`.
+  if (delayTimeS1 > delayTimeS2) {
+    delayMicroseconds(delayTimeS2);
+    stepper2.stop();
+    delayMicroseconds(delayTimeS1 - delayTimeS2);
+    stepper1.stop();
+  } else {
+    delayMicroseconds(delayTimeS1);
+    stepper1.stop();
+    delayMicroseconds(delayTimeS2 - delayTimeS1);
+    stepper2.stop();
+  }
 
-  stepper1.stop();
-  stepper2.stop();
+  // If this does not work, split one big interval
+  // into several smaller intervals -> rounding of velocity (max 0.5 steps)
+  // does not influence the outcome because every interval is shorter than one second
+  // To be even more exact, one could round the velocity in one interval up and in the following down
 
   return 0;
 }
@@ -123,14 +140,14 @@ int goTo(Point p) {
 // `B(t) = (1 - t)^2 P_0 + 2t (1 - t) P_1 + t^2 P_2`
 int bezierCurve(Point p0, Point p1, Point p2) {
   // `accuracy` defines the amount of steps between
-  float accuracy = 5.0;
   float x, y;
+  float increase = 1.0/10.0;
   // Move parameter t from 0.0 to 1.0
-  for (float t = 1/accuracy; t <= 1.0; t += 1.0/accuracy) {
+  for (float t = increase; t < 1.0 + increase; t += increase) {
     x = pow((1.0 - t), 2) * p0.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
     y = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
-    Serial.printf("Points: %f, %f", x, y);
-    Serial.printf("T: %f", t);
+    Serial.printf("Points: %f, %f\n", x, y);
+    Serial.printf("T: %f\n", t);
     if (goTo(Point{x, y}) != 0) {
       Serial.println("Failed to move!");
     }
@@ -143,7 +160,7 @@ void setup() {
   Serial.begin(9600);
   setMotorState(true);
 
-  // // A simple square
+  // A simple square
   // delay(5000);
   // goTo(Point{0, 100});
   // delay(5000);
@@ -152,13 +169,13 @@ void setup() {
   // goTo(Point{100, 0});
   // delay(5000);
   // goTo(Point{0, 0});
+
   delay(5000);
   bezierCurve(Point{0, 0}, Point{0, 100}, Point{100, 100});
   delay(5000);
   goTo(Point{0, 0});
 
-  // Deattach pins
-  Serial.println("Enabling joystick ...");
+  // Disconnect the pins from the PWM signal
   ledcDetachPin(stepper1.stepPin);
   ledcDetachPin(stepper2.stepPin);
 }
