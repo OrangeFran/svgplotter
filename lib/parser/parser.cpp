@@ -124,7 +124,12 @@ struct SVG parseSVG(std::string str) {
               state = PARSER_findTag;
               attr = "";
             } else if (attr == "d") {
-              svg.path = buff;
+              // Add a space before if the path gets
+              // added to an already existing path
+              if (svg.path != "") {
+                svg.path += " ";
+              }
+              svg.path += buff;
               state = PARSER_findTag;
               attr = "";
             }
