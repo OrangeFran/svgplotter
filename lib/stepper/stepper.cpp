@@ -6,8 +6,6 @@
 #define TIMER_I(i) (i == 0 ? LEDC_TIMER_0 : LEDC_TIMER_1)
 #define CHANNEL_I(i) (i == 0 ? LEDC_CHANNEL_0 : LEDC_CHANNEL_1)
 
-// #define CONFIG_FREERTOS_HZ 1000
-
 // TODO: measure/calculate exact mm per step
 // Current number based on trial and error
 float perstep = 0.01;
@@ -48,7 +46,7 @@ void step(int stepper) {
 
 // Constructor
 StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
-  // 0 / 1
+  // 0 or 1
   this->index = index;
   // Pins
   this->dirPin = dirPin;
@@ -58,7 +56,8 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   pinMode(this->dirPin, OUTPUT);
   pinMode(this->stepPin, OUTPUT);
 
-  // Docs: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/esp_timer.html
+  // API documentation for `esp_timer`
+  // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/esp_timer.html
 
   // Timer with callback to stop the pwm signal
   const esp_timer_create_args_t stop_timer_args = {
@@ -75,12 +74,9 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   };
   esp_timer_create(&stop_timer_args, &this->timer);
 
-  // Docs: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html
+  // API documentation for `<driver/ledc.h>`
+  // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html
 
-  // Attach a channel to the stepping pin 
-  // There are only 8 timers for 16 channels
-  // -> subsequent channels use the same timer
-  // and thus cannot be driven by different frequencies
   const ledc_timer_config_t pwm_timer_args = {
     .speed_mode = LEDC_HIGH_SPEED_MODE,
     LEDC_TIMER_14_BIT,
@@ -103,49 +99,22 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   // NOTE: Needed?
   ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
-
-  // // Attach a channel to the stepping pin 
-  // // There are only 8 timers for 16 channels
-  // // -> subsequent channels use the same timer
-  // // and thus cannot be driven by different frequencies
-  // ledcAttachPin(this->stepPin, this->index * 2);
-  // // Frequency is arbitrary on init and will be set
-  // // with the velocity
-  // ledcSetup(this->index * 2, 1000, 14);
 }
 
 void StepperMotor::setVelocity(int velocity, bool shorter) {
   // Velocity in sps
   this->velocity = velocity;
-
   // Set the direction
   digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
-  // // Velocity specifies the delay in microseconds
-  // ledcWriteTone(this->index * 2, (int)this->velocity);
-
   // Velocity specifies the delay in microseconds
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index), (int)this->velocity); 
 
-  // The dutyCycle does not have to be accurate to the point
+  // The duty cycle does not have to be accurate to the point
   // Delay of 2 microseconds = freq of 500000Hz
   int dutyCycle = ceil((float)this->velocity/500000.0 * 16383.0);
   // Use one if dutyCycle is too small
   ledc_set_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index), dutyCycle == 0 ? 1 : dutyCycle);
   ledc_update_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index)); 
-
-  // Change the resolution
-  // This is necessary because the available resolution
-  // reduces if the frequency increases
-  //
-  // Max resolution possible for f: f(f) = log_2(80MHz/f)
-  //   for f = 1 -> ~26
-  //
-  // Formulae:
-  //   (f/500000) * (2**x - 1) = 1
-  //   => x = 1.4427 * ln(1 + 500000/f)
-  //
-  // Delay of 2 microseconds = freq of 500000Hz
-  // int resolution = round(1.4427 * log(1.0 + (500000.0/this->velocity)));
 }
 
 // Do one step
@@ -157,29 +126,6 @@ void StepperMotor::step() {
 
 // Make the string for a certain motor longer/shorter
 int StepperMotor::start(int delay) {
-  // // Calculate and do steps
-  // // The direction is already set, so the prefix can be
-  // // removed with abs()
-  // int steps = abs(distance)/perstep;
-
-  // // With current frequency: One tick = one millisecond
-  // // TickType_t x_last_wake_time = xTaskGetTickCount();
-  // // TickType_t frequency = velocity * portTICK_PERIOD_MS;
-  // for (int i = 0; i < steps; i++) {
-  //   this->step();
-  //   // delayMicroseconds will not work,
-  //   // because it does not provide time for the watchdog
-  //   // vTaskDelay is absolute, vTaskDelayUntil is relative
-  //   vTaskDelayUntil(&x_last_wake_time, frequency);
-  // }
-
-  // // The dutyCycle does not have to be accurate to the point
-  // // Delay of 2 microseconds = freq of 500000Hz
-  // int dutyCycle = round((float)this->velocity/500000.0 * 16383.0);
-  // esp_timer_start_once(this->timer, delay);
-  // // Use one if dutyCycle is too small
-  // ledcWrite(this->index * 2, dutyCycle == 0 ? 1 : dutyCycle);
-
   esp_timer_start_once(this->timer, delay);
   ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
   return 0;

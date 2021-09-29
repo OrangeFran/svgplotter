@@ -70,35 +70,6 @@ int goTo(Point p) {
   //           -> failed, because `vTaskDelay` is only able to
   //              delay with a precision of 1ms 
 
-
-  // // Spawn two threads, one for each motor
-  // pthread_t threads[2];
-  // int creationS1 = pthread_create(&threads[0], NULL, [](int d) { stepper1.travel(d); }, &distanceS1);
-  // int creationS2 = pthread_create(&threads[1], NULL, [](int d) { stepper2.travel(d); }, &distanceS2);
-  // if (creationS1 != 0 || creationS2 != 0) {
-  //   Serial.println("Failed to create threads!");
-  //   return 1;
-  // }
-
-  // // Wait for the threads to complete
-  // // and check the status code
-  // void *statusS1, *statusS2;
-  // pthread_join(threads[0], &statusS1);
-  // pthread_join(threads[1], &statusS2);
-  // if (statusS1 != 0 || statusS2 != 0) {
-  //   Serial.println("Failed to move!");
-  //   return 1;
-  // }
-
-  // // Wrap the member functions to fill the requirement for a
-  // // static non-member function
-  // Serial.println("Starting threads ...");
-  // std::thread threadS1([](int d) { stepper1.travel(d); }, distanceS1);
-  // std::thread threadS2([](int d) { stepper2.travel(d); }, distanceS2);
-  // Serial.println("Waiting for threads ...");
-  // threadS1.join();
-  // threadS2.join();
-
   int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
   int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
@@ -110,32 +81,11 @@ int goTo(Point p) {
 
   // Wait for the timers to trigger a stop
   delayMicroseconds(esp_timer_get_next_alarm() - esp_timer_get_time());
+  // NOTE: Needed?
   int next_alarm = esp_timer_get_next_alarm() - esp_timer_get_time();
   if (next_alarm > 0) {
     delayMicroseconds(next_alarm);
   };
-
-  // // NOTE: For long distances, the delay times differ heavily.
-  // //       Reason: The velocity needs to be specified in Hz. If the
-  // //       can only be specified as an integer, one can loose/gain up
-  // //       to 0.5 steps per second. This is the reason for the
-  // //       two `delayMicroseconds`.
-  // if (delayTimeS1 > delayTimeS2) {
-  //   delayMicroseconds(delayTimeS2);
-  //   stepper2.stop();
-  //   delayMicroseconds(delayTimeS1 - delayTimeS2);
-  //   stepper1.stop();
-  // } else {
-  //   delayMicroseconds(delayTimeS1);
-  //   stepper1.stop();
-  //   delayMicroseconds(delayTimeS2 - delayTimeS1);
-  //   stepper2.stop();
-  // }
-
-  // If this does not work, split one big interval
-  // into several smaller intervals -> rounding of velocity (max 0.5 steps)
-  // does not influence the outcome because every interval is shorter than one second
-  // To be even more exact, one could round the velocity in one interval up and in the following down
 
   return 0;
 }

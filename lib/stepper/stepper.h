@@ -7,11 +7,15 @@ extern int stepPins[2];
 
 class StepperMotor {
   public:
-    int index; // left -> 0, right -> 1
-    float velocity; // sps
+    // left motor -> 0
+    // right motor -> 1
+    int index; 
+    // steps per second (= Hz)
+    float velocity; 
     esp_timer_handle_t timer;
     int dirPin;
     int stepPin;
+
     // Constructor
     StepperMotor(int, int, int);
     void step(void);
