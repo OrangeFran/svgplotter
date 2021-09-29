@@ -9,6 +9,7 @@ class StepperMotor {
   public:
     int index; // left -> 0, right -> 1
     float velocity; // sps
+    esp_timer_handle_t timer;
     int dirPin;
     int stepPin;
     // Constructor
@@ -16,7 +17,7 @@ class StepperMotor {
     void step(void);
     void setVelocity(int, bool);
     // PWM signal controls
-    int start(void);
+    int start(int);
     int stop(void);
 };
 

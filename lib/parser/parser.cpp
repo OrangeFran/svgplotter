@@ -44,7 +44,7 @@ struct SVG parseSVG(std::string str) {
   // Resulting svg
   struct SVG svg;
   
-  std::string buff;                       // Temporary storage
+  std::string buff;                         // Temporary storage
   std::string attr;                         // Attribute to search for ('viewBox' or 'd' for now)
   enum ParserState state = PARSER_findTag;  // The current state
   bool escaped = false;                     // True if previous character was '\'

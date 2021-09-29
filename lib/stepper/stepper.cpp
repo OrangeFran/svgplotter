@@ -52,6 +52,18 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   pinMode(this->dirPin, OUTPUT);
   pinMode(this->stepPin, OUTPUT);
 
+  // Timer with callback to stop the pwm signal
+  const esp_timer_create_args_t stop_timer_args = {
+    // Function to stop the PWM signal
+    .callback = [](void *index){
+      ledcWrite(*((int*)index) * 2, 0);
+    },
+    .arg = &this->index,
+    .dispatch_method = ESP_TIMER_TASK,
+    .name = "PWM Timer",
+  };
+  esp_timer_create(&stop_timer_args, &this->timer);
+
   // Attach a channel to the stepping pin 
   // There are only 8 timers for 16 channels
   // -> subsequent channels use the same timer
@@ -94,7 +106,7 @@ void StepperMotor::step() {
 }
 
 // Make the string for a certain motor longer/shorter
-int StepperMotor::start() {
+int StepperMotor::start(int delay) {
   // // Calculate and do steps
   // // The direction is already set, so the prefix can be
   // // removed with abs()
@@ -114,6 +126,7 @@ int StepperMotor::start() {
   // The dutyCycle does not have to be accurate to the point
   // Delay of 2 microseconds = freq of 500000Hz
   int dutyCycle = round((float)this->velocity/500000.0 * 16383.0);
+  esp_timer_start_once(this->timer, delay);
   // Use one if dutyCycle is too small
   ledcWrite(this->index * 2, dutyCycle == 0 ? 1 : dutyCycle);
   return 0;

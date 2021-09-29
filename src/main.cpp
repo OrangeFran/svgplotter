@@ -28,8 +28,6 @@ typedef struct Point {
 
 // Move to a coordinate
 int goTo(Point p) {
-  Serial.printf("Going to (%f, %f) ...", p.x, p.y);
-
   // Calculate the new length of the string with the
   // Pythagoras formulae
   float newS1 = sqrt(pow(boardWidth/2 + p.x, 2) + pow(boardHeight - p.y, 2));
@@ -107,25 +105,28 @@ int goTo(Point p) {
   Serial.printf("Delay time for S1: %d\n", delayTimeS1);
   Serial.printf("Delay time for S2: %d\n", delayTimeS2);
 
-  stepper1.start();
-  stepper2.start();
+  stepper1.start(delayTimeS1);
+  stepper2.start(delayTimeS2);
 
-  // NOTE: For long distances, the delay times differ heavily.
-  //       Reason: The velocity needs to be specified in Hz. If the
-  //       can only be specified as an integer, one can loose/gain up
-  //       to 0.5 steps per second. This is the reason for the
-  //       two `delayMicroseconds`.
-  if (delayTimeS1 > delayTimeS2) {
-    delayMicroseconds(delayTimeS2);
-    stepper2.stop();
-    delayMicroseconds(delayTimeS1 - delayTimeS2);
-    stepper1.stop();
-  } else {
-    delayMicroseconds(delayTimeS1);
-    stepper1.stop();
-    delayMicroseconds(delayTimeS2 - delayTimeS1);
-    stepper2.stop();
-  }
+  // Wait for the timers to trigger a stop
+  delayMicroseconds(esp_timer_get_next_alarm() - esp_timer_get_time());
+
+  // // NOTE: For long distances, the delay times differ heavily.
+  // //       Reason: The velocity needs to be specified in Hz. If the
+  // //       can only be specified as an integer, one can loose/gain up
+  // //       to 0.5 steps per second. This is the reason for the
+  // //       two `delayMicroseconds`.
+  // if (delayTimeS1 > delayTimeS2) {
+  //   delayMicroseconds(delayTimeS2);
+  //   stepper2.stop();
+  //   delayMicroseconds(delayTimeS1 - delayTimeS2);
+  //   stepper1.stop();
+  // } else {
+  //   delayMicroseconds(delayTimeS1);
+  //   stepper1.stop();
+  //   delayMicroseconds(delayTimeS2 - delayTimeS1);
+  //   stepper2.stop();
+  // }
 
   // If this does not work, split one big interval
   // into several smaller intervals -> rounding of velocity (max 0.5 steps)
@@ -170,10 +171,12 @@ void setup() {
   // delay(5000);
   // goTo(Point{0, 0});
 
-  delay(5000);
-  bezierCurve(Point{0, 0}, Point{0, 100}, Point{100, 100});
-  delay(5000);
-  goTo(Point{0, 0});
+  // delay(5000);
+  // goTo(Point{100, 100});
+  delay(1000);
+  bezierCurve(Point{0, 0}, Point{100, 100}, Point{200, 0});
+  // delay(1000);
+  // bezierCurve(Point{100, 100}, Point{50, 50}, Point{0, 0});
 
   // Disconnect the pins from the PWM signal
   ledcDetachPin(stepper1.stepPin);
