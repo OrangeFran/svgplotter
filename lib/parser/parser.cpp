@@ -3,7 +3,6 @@
 
 #include <string>
 #include <cstdlib>
-#include <iostream>
 #include "parser.h"
 
 // // Extracts the value of attribute ATTR from a tag
@@ -37,13 +36,10 @@ enum ParserState {
 // Attributes to look for and extract
 const std::string attributes[2] = { "svg.viewBox", "path.d" };
 
-// Parse a valid svg into a struct
-// Parser assumes svg is valid and does
-// not check for validity
-struct SVG parseSVG(std::string str) {
-  // Resulting svg
-  struct SVG svg;
-  
+// Parse a valid svg into a class
+// Assumes svg is valid and does not check for validity
+SVG::SVG(std::string str) {
+  // Temporary variables
   std::string buff;                         // Temporary storage
   std::string attr;                         // Attribute to search for ('viewBox' or 'd' for now)
   enum ParserState state = PARSER_findTag;  // The current state
@@ -117,7 +113,7 @@ struct SVG parseSVG(std::string str) {
               int spaceIndex = 0;
               while (count < 4) {
                 spaceIndex = buff.find(' ');
-                svg.viewBox[count] = strtof(buff.substr(0, spaceIndex).c_str(), NULL);
+                this->viewBox[count] = strtof(buff.substr(0, spaceIndex).c_str(), NULL);
                 buff = buff.substr(spaceIndex + 1, -1);
                 count++;
               }
@@ -126,10 +122,10 @@ struct SVG parseSVG(std::string str) {
             } else if (attr == "d") {
               // Add a space before if the path gets
               // added to an already existing path
-              if (svg.path != "") {
-                svg.path += " ";
+              if (this->path != "") {
+                this->path += " ";
               }
-              svg.path += buff;
+              this->path += buff;
               state = PARSER_findTag;
               attr = "";
             }
@@ -143,8 +139,6 @@ struct SVG parseSVG(std::string str) {
         break;
     }
   }
-
-  return svg;
 }
 
 // const std::string testStringValid =

@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <driver/ledc.h>
-
 #include "stepper.h"
 
 #define TIMER_I(i) (i == 0 ? LEDC_TIMER_0 : LEDC_TIMER_1)
@@ -8,22 +7,19 @@
 
 // TODO: measure/calculate exact mm per step
 // Current number based on trial and error
-float perstep = 0.01;
-                // 0.009817477;
-                // 0.019625;
-                // 0.07925;
-
-// Pins to set direction and move: { leftPin, rightPin }
-int dirPins[2] = {16, 18};
-int stepPins[2] = {17, 19};
-
-// Pins to control state of motors
-int enPin = 12;
-int resPin = 33;
-int sleepPin = 32;
-
+const float perstep = 0.01;
 // Global turned on state of motors
 bool motorState = false;
+
+// Pins to control state of motors
+const int enPin = 12;
+const int resPin = 33;
+const int sleepPin = 32;
+
+// Pins to set direction and move
+// { leftPin, rightPin }
+const int dirPins[2] = { 16, 18 };
+const int stepPins[2] = { 17, 19 };
 
 // Turn the controlboard, motors on
 void setMotorState(bool on) {
