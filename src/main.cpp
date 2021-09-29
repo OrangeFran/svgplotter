@@ -9,11 +9,6 @@
 // The whiteboard (in mm)
 float boardWidth = 1930.0;
 float boardHeight = 1170.0;
-// The current position (s1, s2)
-// s1 = left string, s2 = right string
-float initialPosition = sqrt(pow(boardWidth/2, 2) + pow(boardHeight, 2));
-float position[2] = {initialPosition, initialPosition};
-
 // In steps per second (sps)
 // Delay of 500 µs in rps: 2000 sps
 float baseVelocity = 2000.0;
@@ -24,31 +19,50 @@ StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
 typedef struct Point {
   float x;
   float y;
+
+  // Calculate the length of the string at
+  // the point (x, y) with the law of Pythagoras
+  float *calculatePosition() {
+    float newS1 = sqrt(pow(boardWidth/2 + this->x, 2) + pow(boardHeight - this->y, 2));
+    float newS2 = sqrt(pow(boardWidth/2 - this->x, 2) + pow(boardHeight - this->y, 2));
+    // Keyword `static` makes sure that the array
+    // is not deleted (out of scope) after the return statement
+    static float position[2] = { newS1, newS2 };
+    return position;
+  };
+
 } Point;
+
+typedef struct Position {
+  Point point;
+  float stringLength[2];
+} Position;
+
+// // The current position (s1, s2)
+// // s1 = left string, s2 = right string
+// float initialPosition = sqrt(pow(boardWidth/2, 2) + pow(boardHeight, 2));
+// float position[2] = {initialPosition, initialPosition};
+
+Position currPos = Position {
+  .point = Point { .x = 0, .y = 0 },
+  .stringLength = *(Point { .x = 0, .y = 0 }).calculatePosition(),
+};
 
 // Move to a coordinate
 int goTo(Point p) {
-  // Calculate the new length of the string with the
-  // Pythagoras formulae
-  float newS1 = sqrt(pow(boardWidth/2 + p.x, 2) + pow(boardHeight - p.y, 2));
-  float newS2 = sqrt(pow(boardWidth/2 - p.x, 2) + pow(boardHeight - p.y, 2));
+  float *newPos = p.calculatePosition(); 
   // Calculate the necessary movement
-  float distanceS1 = newS1 - position[0];
-  float distanceS2 = newS2 - position[1];
+  float distanceS1 = newPos[0] - currPos.stringLength[0];
+  float distanceS2 = newPos[1] - currPos.stringLength[1];
+  // Update the position
+  currPos.point = p;
+  currPos.stringLength[0] = newPos[0];
+  currPos.stringLength[1] = newPos[1];
 
   // TODO: round() or int()
   int stepsS1 = round(abs(distanceS1)/perstep);
   int stepsS2 = round(abs(distanceS2)/perstep);
 
-  // Update the position
-  position[0] = newS1;
-  position[1] = newS2;
-
-  Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
-  Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
-  Serial.printf("New position:  %f, %f\n", position[0], position[1]);
-
-  // Calculate the needed velocities
   int velocityS1, velocityS2;
   // The velocity for the shorter distance will
   // be a fraction of the base velocity of the longer distance
@@ -60,21 +74,23 @@ int goTo(Point p) {
     velocityS1 = round((float)stepsS1/(float)stepsS2 * baseVelocity);
   }
 
-  Serial.printf("Velocities (sps): %d, %d\n", velocityS1, velocityS2);
+  int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
+  int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
-  stepper1.setVelocity(velocityS1, distanceS1 < 0);
-  stepper2.setVelocity(velocityS2, distanceS2 < 0);
+  Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
+  Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+  Serial.printf("New position:  %f, %f\n", currPos.point.x, currPos.point.y);
+  Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
+  Serial.printf("Delay for S1: %d\n", delayTimeS1);
+  Serial.printf("Delay for S2: %d\n", delayTimeS2);
 
   // NOTE: Other approaches tried:
   //         - seperate threads for each motor
   //           -> failed, because `vTaskDelay` is only able to
   //              delay with a precision of 1ms 
 
-  int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
-  int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
-
-  Serial.printf("Delay time for S1: %d\n", delayTimeS1);
-  Serial.printf("Delay time for S2: %d\n", delayTimeS2);
+  stepper1.setVelocity(velocityS1, distanceS1 < 0);
+  stepper2.setVelocity(velocityS2, distanceS2 < 0);
 
   stepper1.start(delayTimeS1);
   stepper2.start(delayTimeS2);
@@ -101,8 +117,8 @@ int bezierCurve(Point p0, Point p1, Point p2) {
   for (float t = increase; t < 1.0 + increase; t += increase) {
     x = pow((1.0 - t), 2) * p0.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
     y = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
-    Serial.printf("Points: %f, %f\n", x, y);
-    Serial.printf("T: %f\n", t);
+    // Serial.printf("Points: %f, %f\n", x, y);
+    // Serial.printf("T: %f\n", t);
     if (goTo(Point{x, y}) != 0) {
       Serial.println("Failed to move!");
     }
@@ -127,7 +143,11 @@ void setup() {
   // goTo(Point{0, 0});
 
   // goTo(Point{100, 100});
-  bezierCurve(Point{0, 0}, Point{0, 100}, Point{100, 100});
+  bezierCurve(
+    Point{ .x = 0, .y = 0 },
+    Point{ .x = 0, .y = 100 },
+    Point{100, 100}
+  );
   delay(1000);
   goTo(Point{0, 0});
   // bezierCurve(Point{100, 100}, Point{50, 50}, Point{0, 0});
