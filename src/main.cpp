@@ -110,6 +110,10 @@ int goTo(Point p) {
 
   // Wait for the timers to trigger a stop
   delayMicroseconds(esp_timer_get_next_alarm() - esp_timer_get_time());
+  int next_alarm = esp_timer_get_next_alarm() - esp_timer_get_time();
+  if (next_alarm > 0) {
+    delayMicroseconds(next_alarm);
+  };
 
   // // NOTE: For long distances, the delay times differ heavily.
   // //       Reason: The velocity needs to be specified in Hz. If the
@@ -161,21 +165,21 @@ void setup() {
   Serial.begin(9600);
   setMotorState(true);
 
-  // A simple square
-  // delay(5000);
+  delay(5000);
+
+  // // A simple square
   // goTo(Point{0, 100});
-  // delay(5000);
+  // delay(1000);
   // goTo(Point{100, 100});
-  // delay(5000);
+  // delay(1000);
   // goTo(Point{100, 0});
-  // delay(5000);
+  // delay(1000);
   // goTo(Point{0, 0});
 
-  // delay(5000);
   // goTo(Point{100, 100});
+  bezierCurve(Point{0, 0}, Point{0, 100}, Point{100, 100});
   delay(1000);
-  bezierCurve(Point{0, 0}, Point{100, 100}, Point{200, 0});
-  // delay(1000);
+  goTo(Point{0, 0});
   // bezierCurve(Point{100, 100}, Point{50, 50}, Point{0, 0});
 
   // Disconnect the pins from the PWM signal
