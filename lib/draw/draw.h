@@ -28,10 +28,9 @@ class Plotter {
     StepperMotor stepper1; // left
     StepperMotor stepper2; // right
 
-    // Move to the new point
     int moveTo(Point);
-    // Draw a cubic bezier curve
     int bezierQuadratic(Point, Point);
+    int bezierCubic(Point, Point, Point);
 };
 
 #endif
