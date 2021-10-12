@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "draw.h"
+#include "plotter.h"
 
 // Implementation of De Casteljau's algorithm
 // parametric function with `t` -> move t from 0 to 1

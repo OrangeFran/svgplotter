@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include "draw.h"
+#include "plotter.h"
 #include "parser.h"
 
 // Whiteboard

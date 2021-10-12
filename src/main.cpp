@@ -3,7 +3,7 @@
 #include "joystick.h"
 #include "stepper.h"
 #include "parser.h"
-#include "draw.h"
+#include "plotter.h"
 
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);

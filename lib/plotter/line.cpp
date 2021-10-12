@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "draw.h"
+#include "plotter.h"
 
 // Move to a coordinate
 int Plotter::moveTo(Point p) {
