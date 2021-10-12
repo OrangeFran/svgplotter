@@ -28,11 +28,11 @@ float *Point::calculatePosition() {
 // `<path>`: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 int Plotter::executeSVG(SVG svg) {
   // Retrieve the vector with all of the commands + coordinates
-  std::vector<std::pair<char, std::vector<float>>> res = svg.followPath();
+  std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
 
   for (int i = 0; i < res.size(); i++) {
     // Get the next element
-    std::pair<char, std::vector<float>> c = res[i];
+    std::pair<char, std::vector<float> > c = res[i];
     switch (c.first) {
       // Move to
       case 'm' | 'M':

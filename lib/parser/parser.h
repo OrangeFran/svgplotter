@@ -10,7 +10,7 @@ class SVG {
 
     // Constructor
     SVG(std::string);
-    std::vector<std::pair<char, std::vector<float>>> followPath(void);
+    std::vector<std::pair<char, std::vector<float> > > followPath(void);
 };
 
 #endif

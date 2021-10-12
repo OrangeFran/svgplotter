@@ -167,7 +167,7 @@ std::vector<std::pair<char, std::vector<float> > > SVG::followPath() {
     } else {
       index += 1;
       actions.push_back(
-        std::pair<char, std::vector<float>>(c, std::vector<float>(0))
+        std::pair<char, std::vector<float> >(c, std::vector<float>(0))
       );
     }    
   }

@@ -49,9 +49,9 @@ void test_parser_valid_path_default() {
     "</svg>";
 
   SVG svg = SVG(s);
-  std::map<char, std::vector<float> > res = svg.followPath();
-  TEST_ASSERT_EQUAL_FLOAT(100.0, res['M'][0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.0, res['M'][1]);
+  std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
+  TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[1]);
 }
 
 void test_parser_valid_path_float() {
@@ -62,9 +62,9 @@ void test_parser_valid_path_float() {
     "</svg>";
 
   SVG svg = SVG(s);
-  std::map<char, std::vector<float> > res = svg.followPath();
-  TEST_ASSERT_EQUAL_FLOAT(100.5, res['L'][0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.145, res['L'][1]);
+  std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
+  TEST_ASSERT_EQUAL_FLOAT(100.5, res[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.145, res[0].second[1]);
 }
 
 void test_parser_valid_path_no_space() {
@@ -75,11 +75,10 @@ void test_parser_valid_path_no_space() {
     "</svg>";
 
   SVG svg = SVG(s);
-  std::map<char, std::vector<float> > res = svg.followPath();
-  TEST_ASSERT_EQUAL_FLOAT(100.0, res['M'][0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.0, res['M'][1]);
+  std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
+  TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[1]);
 }
-
 
 // Run tests on native os
 // `pio test -e native -v`
