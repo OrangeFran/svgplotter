@@ -30,8 +30,13 @@ void test_draw_line_triangle() {
   plotter.moveTo(Point(0, 0));
 }
 
-void test_draw_bezier() {
+void test_draw_bezier_quadratic() {
   plotter.bezierQuadratic(Point(0, 100), Point(100, 100));
+  plotter.moveTo(Point(0, 0));
+}
+
+void test_draw_bezier_cubic() {
+  plotter.bezierCubic(Point(0, 100), Point(100, 100), Point(100, 0));
   plotter.moveTo(Point(0, 0));
 }
 
@@ -43,7 +48,8 @@ void setup() {
 
   RUN_TEST(test_draw_line_square);
   RUN_TEST(test_draw_line_triangle);
-  RUN_TEST(test_draw_bezier);
+  RUN_TEST(test_draw_bezier_quadratic);
+  RUN_TEST(test_draw_bezier_cubic);
 
   UNITY_END();
 }
