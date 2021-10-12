@@ -24,7 +24,13 @@ void setup() {
   setMotorState(true);
   delay(5000);
 
-
+  // Parse example SVG
+  const std::string example =
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+      "<path d=\"M 100 200 L 200 300\">\n"
+    "</svg>";
+  SVG svg = SVG(example);
+  plotter.executeSVG(svg);
 
   // Disconnect the pins from the PWM signal
   ledcDetachPin(plotter.stepper1.stepPin);

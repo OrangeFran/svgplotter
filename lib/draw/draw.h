@@ -1,6 +1,7 @@
 #ifndef DRAW_H
 #define DRAW_H
 
+#include "parser.h"
 #include "stepper.h"
 
 // Whiteboard
@@ -31,6 +32,7 @@ class Plotter {
     int moveTo(Point);
     int bezierQuadratic(Point, Point);
     int bezierCubic(Point, Point, Point);
+    int executeSVG(SVG);
 };
 
 #endif

@@ -1,7 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <map>
 #include <vector>
 
 class SVG {
@@ -11,7 +10,7 @@ class SVG {
 
     // Constructor
     SVG(std::string);
-    std::map<char, std::vector<float> > followPath(void);
+    std::vector<std::pair<char, std::vector<float>>> followPath(void);
 };
 
 #endif
