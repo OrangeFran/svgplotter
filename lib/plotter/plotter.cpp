@@ -27,6 +27,8 @@ float *Point::calculatePosition() {
 
 // `<path>`: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 int Plotter::executeSVG(SVG svg) {
+  // Store the start coordinates to return later
+  Point start = this->pos;
   // Retrieve the vector with all of the commands + coordinates
   std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
 
@@ -84,9 +86,9 @@ int Plotter::executeSVG(SVG svg) {
         break;
 
       // Close path
-      // TODO: Implement
       case 'z' | 'Z':
-        // this->moveTo(start);
+        // Point `start` saved in the beginning
+        this->moveTo(start);
         break;
 
       // Quadratic bézier curve
@@ -107,6 +109,7 @@ int Plotter::executeSVG(SVG svg) {
         break;
 
       // Quadratic bézier curve (continuation)
+      // https://www.inf.ed.ac.uk/teaching/courses/cg/d3/bezierJoin.html
       case 't' | 'T':
         // `P_1 = 2 * P_0 - P_old_1`
         float x1 = 2.0 * this->pos.x - res[i - 1].second[0];
@@ -145,7 +148,8 @@ int Plotter::executeSVG(SVG svg) {
         this->bezierCubic(Point(x1, y1), Point(x2, y2), Point(x3, y3));
         break;
 
-      // Cubic bézier curve
+      // Cubic bézier curve (continuation)
+      // https://www.inf.ed.ac.uk/teaching/courses/cg/d3/bezierJoin.html
       case 's' | 'S':
         // `P_1 = 2 * P_0 - P_old_2`
         float x1 = 2.0 * this->pos.x - res[i - 1].second[2];
