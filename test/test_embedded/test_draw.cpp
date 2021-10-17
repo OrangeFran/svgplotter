@@ -17,6 +17,8 @@ Plotter plotter = {
   .stepper2 = stepper2,
 };
 
+// Manual
+
 void test_draw_line_square() {
   plotter.moveTo(Point(0, 100));
   plotter.moveTo(Point(100, 100));
@@ -40,6 +42,25 @@ void test_draw_bezier_cubic() {
   plotter.moveTo(Point(0, 0));
 }
 
+// SVG Files
+void test_draw_svg_square() {
+  const std::string square = 
+    "<svg width=\"200\" height=\"200\" viewBox=\"0 0 200 200\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">"
+    "<path d=\"M 50,50 H 150 V 150 H 50 Z\" stroke=\"black\"/>"
+    "</svg>";
+  SVG svg = SVG(square);
+  plotter.executeSVG(svg);
+}
+void test_draw_svg_heart() {
+  const std::string heart = 
+    "<svg width=\"200\" height=\"200\" viewBox=\"0 0 200 200\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">"
+    "<path d=\"M100 141.015C129.833 101.681 171.6 32.0145 100 68.0145\" stroke=\"black\"/>"
+    "<path d=\"M99.5341 141.015C69.7007 101.681 27.9341 32.0145 99.5341 68.0145\" stroke=\"black\"/>"
+    "</svg>";
+  SVG svg = SVG(heart);
+  plotter.executeSVG(svg);
+}
+
 // Run tests on esp32dev 
 // `pio test -e esp32dev -v`
 void setup() {
@@ -50,6 +71,9 @@ void setup() {
   RUN_TEST(test_draw_line_triangle);
   RUN_TEST(test_draw_bezier_quadratic);
   RUN_TEST(test_draw_bezier_cubic);
+
+  RUN_TEST(test_draw_svg_square);
+  RUN_TEST(test_draw_svg_heart);
 
   UNITY_END();
 }
