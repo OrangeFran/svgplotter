@@ -1,8 +1,9 @@
-#ifndef DRAW_H
-#define DRAW_H
+#ifndef PLOTTER_H
+#define PLOTTER_H
 
 #include "parser.h"
 #include "stepper.h"
+#include "servo.h"
 
 // Whiteboard
 extern const float boardWidth;
@@ -28,7 +29,9 @@ class Plotter {
     float stringLength[2];
     StepperMotor stepper1; // left
     StepperMotor stepper2; // right
+    Servo pen;
 
+    // No constructor
     int moveTo(Point);
     int bezierQuadratic(Point, Point);
     int bezierCubic(Point, Point, Point);

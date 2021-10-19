@@ -15,6 +15,7 @@ bool motorState = false;
 const int enPin = 12;
 const int resPin = 33;
 const int sleepPin = 32;
+const int penPin = 22;
 
 // Pins to set direction and move
 // { leftPin, rightPin }
@@ -59,10 +60,7 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   const esp_timer_create_args_t stop_timer_args = {
     // Function to stop the PWM signal
     .callback = [](void *index){
-      // ledcWrite(*((int*)index) * 2, 0);
       ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(*(int *)index));
-      // ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-      // Serial.printf("Reset timer %d on channel %d (%d)!\n", TIMER_I(*(int *)index), CHANNEL_I(*(int *)index), *(int *)index);
     },
     .arg = &this->index,
     .dispatch_method = ESP_TIMER_TASK,
@@ -100,7 +98,9 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
 void StepperMotor::setVelocity(int velocity, bool shorter) {
   // Velocity in sps
   this->velocity = velocity;
+
   // Set the direction
+  //  counter-clockwise -> 0, clockwise -> 1
   digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
   // Velocity specifies the delay in microseconds
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index), (int)this->velocity); 
@@ -131,6 +131,5 @@ int StepperMotor::start(int delay) {
 int StepperMotor::stop() {
   ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-  // ledcWrite(this->index * 2, 0);
   return 0;
 }

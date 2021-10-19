@@ -9,6 +9,7 @@ extern const float perstep;
 // Global turned on state of motors
 extern bool motorState;
 
+extern const int penPin;
 // Pins to set direction and move
 // { leftPin, rightPin }
 extern const int dirPins[2];
@@ -17,10 +18,9 @@ extern const int stepPins[2];
 // One stepper motor
 class StepperMotor {
   public:
-    // left motor -> 0
-    // right motor -> 1
+    // Left motor -> 0, right motor -> 1
     int index; 
-    // steps per second (= Hz)
+    // In steps per second (= Hz)
     float velocity; 
     esp_timer_handle_t timer;
     int dirPin;

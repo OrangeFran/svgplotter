@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include "joystick.h"
 #include "stepper.h"
+#include "plotter.h"
 
 int joyPins[3] = {34,35,26};
 
@@ -29,36 +30,44 @@ void setDirs(int d0, int d1) {
   setDir(1, d1);
 }
 
-void joystick() {
-  int a[2];
-  a[0] = analogRead(joyPins[0]);
-  a[1] = analogRead(joyPins[1]);
-  // int sw = digitalRead(joyPins[2]);
+void joystick(Plotter plotter) {
+  pinMode(joyPins[0], INPUT);
+  pinMode(joyPins[1], INPUT);
+  pinMode(joyPins[2], INPUT_PULLUP);
+  while (true) {
+    int a[2];
+    a[0] = analogRead(joyPins[0]);
+    a[1] = analogRead(joyPins[1]);
+    int sw = digitalRead(joyPins[2]);
   
-  int vx=(a[1]<500 ? -1 : (a[1]>3500 ? 1 : 0));
-  int vy=(a[0]<500 ? -1 : (a[0]>3500 ? 1 : 0));
+    int vx=(a[1]<500 ? -1 : (a[1]>3500 ? 1 : 0));
+    int vy=(a[0]<500 ? -1 : (a[0]>3500 ? 1 : 0));
 
-  int m0 = vx-vy;
-  int m1 = -vx-vy;
-  if (m0!=0 || m1!=0) {
-    if (millis()-lastMove<2) {
-      if (stepdelay>100) {
-        stepdelay = maxdelay*(sqrt(stepnum+1)-sqrt(stepnum));
-        stepnum++;
+    int m0 = vx-vy;
+    int m1 = -vx-vy;
+    if (m0!=0 || m1!=0) {
+      if (millis()-lastMove<2) {
+        if (stepdelay>100) {
+          stepdelay = maxdelay*(sqrt(stepnum+1)-sqrt(stepnum));
+          stepnum++;
+        }
+      } else {
+        stepdelay=maxdelay;
+        stepnum = 1;
       }
-    } else {
-      stepdelay=maxdelay;
-      stepnum = 1;
+      delayMicroseconds(stepdelay);
+      lastMove=millis();
     }
-    delayMicroseconds(stepdelay);
-    lastMove=millis();
-  }
-  setDirs(m0<0 ? 1:0, m1<0 ? 1:0);
+    setDirs(m0<0 ? 1:0, m1<0 ? 1:0);
   
-  if (m0!=0) {
-    step(0);
-  }
-  if (m1!=0) {
-    step(1);
+    if (m0!=0) {
+      step(0);
+    }
+    if (m1!=0) {
+      step(1);
+    }
+    if (!sw) {
+      plotter.pen.toggle(); 
+    }
   }
 }

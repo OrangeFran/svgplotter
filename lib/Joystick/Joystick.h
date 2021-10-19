@@ -1,6 +1,8 @@
 #ifndef JOYSTICK_H
 #define JOYSTICK_H
 
-void joystick();
+#include "plotter.h"
+
+void joystick(Plotter);
 
 #endif

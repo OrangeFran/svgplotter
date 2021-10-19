@@ -6,7 +6,7 @@
 // Whiteboard
 const float boardWidth = 1930.0;    // mm
 const float boardHeight = 1170.0;   // mm
-// Delay of 500 µs in rps: 2000Hz
+// Delay of 500 µs in sps: 2000Hz
 const float baseVelocity = 2000.0;  // Hz
 
 Point::Point(float x, float y) {
@@ -17,11 +17,11 @@ Point::Point(float x, float y) {
 // Calculate the length of the string at
 // the point (x, y) with the law of Pythagoras
 float *Point::calculatePosition() {
-  float newS1 = sqrt(pow(boardWidth/2 + this->x, 2) + pow(boardHeight - this->y, 2));
-  float newS2 = sqrt(pow(boardWidth/2 - this->x, 2) + pow(boardHeight - this->y, 2));
   // Keyword `static` makes sure that the array
   // is not deleted (out of scope) after the return statement
-  static float position[2] = { newS1, newS2 };
+  static float position[2];
+  position[0] = sqrt(pow(boardWidth/2 + this->x, 2) + pow(boardHeight - this->y, 2));
+  position[1] = sqrt(pow(boardWidth/2 - this->x, 2) + pow(boardHeight - this->y, 2));
   return position;
 }
 
@@ -32,71 +32,82 @@ int Plotter::executeSVG(SVG svg) {
   // Retrieve the vector with all of the commands + coordinates
   std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
 
+  float x1, y1, x2, y2, x3, y3;
   for (int i = 0; i < res.size(); i++) {
     // Get the next element
     std::pair<char, std::vector<float> > c = res[i];
+    Serial.printf("Executing '%c %f %f'\n", c.first, c.second[0], c.second[1]);
+
     switch (c.first) {
       // Move to
-      case 'm' | 'M':
-        float x = c.second[0];
-        float y = c.second[1];
+      case 'm':
+      case 'M':
+         x1 = c.second[0];
+         y1 = c.second[1];
         // Relative coordinates
         if (c.first == 'm') {
-          x += this->pos.x;
-          y += this->pos.y;
+          x1 += this->pos.x;
+          y1 += this->pos.y;
         }
-        this->moveTo(Point(x, y));
+        this->pen.penUp();
+        this->moveTo(Point(x1, y1));
         break;
 
       // Line to
-      case 'l' | 'L':
-        float x = c.second[0];
-        float y = c.second[1];
+      case 'l':
+      case 'L':
+         x1 = c.second[0];
+         y1 = c.second[1];
         // Relative coordinates
         if (c.first == 'l') {
-          x += this->pos.x;
-          y += this->pos.y;
+          x1 += this->pos.x;
+          y1 += this->pos.y;
         }
-        // this->penDown();
-        this->moveTo(Point(x, y));
+        this->pen.penDown();
+        this->moveTo(Point(x1, y1));
         break;
 
       // Horizontal line
-      case 'h' | 'H':
-        float x = c.second[0];
-        float y = this->pos.y;
+      case 'h':
+      case 'H':
+         x1 = c.second[0];
+         y1 = this->pos.y;
         // Relative coordinates
         if (c.first == 'h') {
-          x += this->pos.x;
+          x1 += this->pos.x;
         }
-        // this->penDown();
-        this->moveTo(Point(x, y));
+        this->pen.penDown();
+        this->moveTo(Point(x1, y1));
         break;
 
       // Vertical line
-      case 'v' | 'V':
-        float x = this->pos.x;
-        float y = c.second[0];
+      case 'v':
+      case 'V':
+         x1 = this->pos.x;
+         y1 = c.second[0];
         // Relative coordinates
         if (c.first == 'v') {
-          y += this->pos.y;
+          y1 += this->pos.y;
         }
-        // this->penDown();
-        this->moveTo(Point(x, y));
+        this->pen.penDown();
+        this->moveTo(Point(x1, y1));
         break;
 
       // Close path
-      case 'z' | 'Z':
+      case 'z':
+      case 'Z':
         // Point `start` saved in the beginning
+        this->pen.penDown();
         this->moveTo(start);
         break;
 
       // Quadratic bézier curve
-      case 'q' | 'q':
-        float x1 = c.second[0];
-        float y1 = c.second[1];
-        float x2 = c.second[2];
-        float y2 = c.second[3];
+      case 'q':
+      case 'Q':
+         x1 = c.second[0];
+         y1 = c.second[1];
+         x2 = c.second[2];
+         y2 = c.second[3];
         // Relative coordinates
         if (c.first == 'q') {
           x1 += this->pos.x;
@@ -104,18 +115,19 @@ int Plotter::executeSVG(SVG svg) {
           x2 += this->pos.x;
           y2 += this->pos.y;
         }
-        // this->penDown();
+        this->pen.penDown();
         this->bezierQuadratic(Point(x1, y1), Point(x2, y2));
         break;
 
       // Quadratic bézier curve (continuation)
       // https://www.inf.ed.ac.uk/teaching/courses/cg/d3/bezierJoin.html
-      case 't' | 'T':
+      case 't':
+      case 'T':
         // `P_1 = 2 * P_0 - P_old_1`
-        float x1 = 2.0 * this->pos.x - res[i - 1].second[0];
-        float y1 = 2.0 * this->pos.y - res[i - 1].second[1];
-        float x2 = c.second[0];
-        float y2 = c.second[1];
+         x1 = 2.0 * this->pos.x - res[i - 1].second[0];
+         y1 = 2.0 * this->pos.y - res[i - 1].second[1];
+         x2 = c.second[0];
+         y2 = c.second[1];
         // Relative coordinates
         if (c.first == 't') {
           x1 += this->pos.x;
@@ -123,18 +135,19 @@ int Plotter::executeSVG(SVG svg) {
           x2 += this->pos.x;
           y2 += this->pos.y;
         }
-        // this->penDown();
+        this->pen.penDown();
         this->bezierQuadratic(Point(x1, y1), Point(x2, y2));
         break;
 
       // Cubic bézier curve
-      case 'c' | 'C':
-        float x1 = c.second[0];
-        float y1 = c.second[1];
-        float x2 = c.second[2];
-        float y2 = c.second[3];
-        float x3 = c.second[4];
-        float y3 = c.second[5];
+      case 'c':
+      case 'C':
+         x1 = c.second[0];
+         y1 = c.second[1];
+         x2 = c.second[2];
+         y2 = c.second[3];
+         x3 = c.second[4];
+         y3 = c.second[5];
         // Relative coordinates
         if (c.first == 'c') {
           x1 += this->pos.x;
@@ -144,20 +157,21 @@ int Plotter::executeSVG(SVG svg) {
           x3 += this->pos.x;
           y3 += this->pos.y;
         }
-        // this->penDown();
+        this->pen.penDown();
         this->bezierCubic(Point(x1, y1), Point(x2, y2), Point(x3, y3));
         break;
 
       // Cubic bézier curve (continuation)
       // https://www.inf.ed.ac.uk/teaching/courses/cg/d3/bezierJoin.html
-      case 's' | 'S':
+      case 's':
+      case 'S':
         // `P_1 = 2 * P_0 - P_old_2`
-        float x1 = 2.0 * this->pos.x - res[i - 1].second[2];
-        float y1 = 2.0 * this->pos.y - res[i - 1].second[3];
-        float x2 = c.second[2];
-        float y2 = c.second[3];
-        float x3 = c.second[4];
-        float y3 = c.second[5];
+         x1 = 2.0 * this->pos.x - res[i - 1].second[2];
+         y1 = 2.0 * this->pos.y - res[i - 1].second[3];
+         x2 = c.second[2];
+         y2 = c.second[3];
+         x3 = c.second[4];
+         y3 = c.second[5];
         // Relative coordinates
         if (c.first == 's') {
           x1 += this->pos.x;
@@ -167,7 +181,7 @@ int Plotter::executeSVG(SVG svg) {
           x3 += this->pos.x;
           y3 += this->pos.y;
         }
-        // this->penDown();
+        this->pen.penDown();
         this->bezierCubic(Point(x1, y1), Point(x2, y2), Point(x3, y3));
         break;
 
