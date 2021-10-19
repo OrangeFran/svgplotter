@@ -1,30 +1,14 @@
 // Parse an svg file
 // Only the <path> and <svg> elements are needed
 
+// #include <iostream>
+
+#include <map>
+// NOTE:: Needed?
+#include <vector>
 #include <string>
 #include <cstdlib>
-#include <iostream>
 #include "parser.h"
-
-// // Extracts the value of attribute ATTR from a tag
-// // Example: "viewBox" from <svg viewBox="0 0 100 100">
-// //          -> "0 0 100 100"
-// std::string extractValue(std::string attr, std::string tag) {
-//   std::string res;
-//   // Loop until the attribute is found
-//   while (true) {
-//     // .substr includes the starting index -> add 1
-//     tag = tag.substr(tag.find(' ') + 1, -1);
-//     // Check if the substr starts with the attribute
-//     if (tag.rfind(attr, 0) != -1) {
-//       int start = tag.find('"');
-//       // Is there an easier way?
-//       res = tag.substr(start + 1, tag.substr(start + 1, -1).find('"'));
-//       break;
-//     }
-//   }
-//   return res;
-// }
 
 enum ParserState {
   PARSER_findTag = 1,   // Looks for tag start ('<')
@@ -37,13 +21,10 @@ enum ParserState {
 // Attributes to look for and extract
 const std::string attributes[2] = { "svg.viewBox", "path.d" };
 
-// Parse a valid svg into a struct
-// Parser assumes svg is valid and does
-// not check for validity
-struct SVG parseSVG(std::string str) {
-  // Resulting svg
-  struct SVG svg;
-  
+// Parse a valid svg into a class
+// Assumes svg is valid and does not check for validity
+SVG::SVG(std::string str) {
+  // Temporary variables
   std::string buff;                         // Temporary storage
   std::string attr;                         // Attribute to search for ('viewBox' or 'd' for now)
   enum ParserState state = PARSER_findTag;  // The current state
@@ -68,6 +49,7 @@ struct SVG parseSVG(std::string str) {
           state = PARSER_getTag;
         }
         break;
+
       case PARSER_getTag:
         if (c == ' ') {
           for (int i = 0; i < 2; i++) {
@@ -87,12 +69,14 @@ struct SVG parseSVG(std::string str) {
           buff += c;
         }
         break;
+
       case PARSER_endTag:
         if (c == '>') {
           state = PARSER_findTag;
           buff = "";
         }
         break;
+
       case PARSER_findAttr:
         if (c == ' ') {
           buff = "";
@@ -106,6 +90,7 @@ struct SVG parseSVG(std::string str) {
           buff += c;
         }
         break;
+
       case PARSER_getAttr:
         if (c == '"') {
           // End of attribute value
@@ -117,7 +102,7 @@ struct SVG parseSVG(std::string str) {
               int spaceIndex = 0;
               while (count < 4) {
                 spaceIndex = buff.find(' ');
-                svg.viewBox[count] = strtof(buff.substr(0, spaceIndex).c_str(), NULL);
+                this->viewBox[count] = strtof(buff.substr(0, spaceIndex).c_str(), NULL);
                 buff = buff.substr(spaceIndex + 1, -1);
                 count++;
               }
@@ -126,10 +111,10 @@ struct SVG parseSVG(std::string str) {
             } else if (attr == "d") {
               // Add a space before if the path gets
               // added to an already existing path
-              if (svg.path != "") {
-                svg.path += " ";
+              if (this->path != "") {
+                this->path += " ";
               }
-              svg.path += buff;
+              this->path += buff;
               state = PARSER_findTag;
               attr = "";
             }
@@ -143,32 +128,55 @@ struct SVG parseSVG(std::string str) {
         break;
     }
   }
-
-  return svg;
 }
 
-// const std::string testStringValid =
-//   "<?xml version=\"1.0\" ?>\n"
-//   "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
-//     "<path color=\"blue\" d=\"M 100 100\">\n"
-//   "</svg>";
+// Docs: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
-// int main() {
-//   // // Test 1
-//   // std::string tag = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n";
-//   // std::string res = extractValue("viewBox", tag);
-//   // // "0 0 500 500" is expected
-//   // std::cout << "'" << res << "'" << std::endl;
-// 
-//   // // Test 2
-//   // std::string tag2 = "<path d=\"M 100 100\" blabla=\"error\">\n";
-//   // std::string res2 = extractValue("d", tag2);
-//   // // "M 100 100" is expected
-//   // std::cout << "'" << res2 << "'" << std::endl;
-// 
-//   // Test 1
-//   struct SVG svg = parseSVG(testString);
-//   std::cout << "svg.viewBox: '" << svg.viewBox << "'" << std::endl;
-//   std::cout << "path.d: '" << svg.path << "'" << std::endl;
-//   return 0;
-// }
+// // List of { command, nargs } pairs for
+// // every possible <path> command
+// const std::map<char, int> commands = {
+//   { 'M', 2 }, { 'm', 2 },
+//   { 'L', 2 }, { 'l', 2 },
+//   { 'H', 1 }, { 'h', 1 },
+//   { 'V', 1 }, { 'v', 1 },
+// };
+
+// Parse path
+std::vector<std::pair<char, std::vector<float> > > SVG::followPath() {
+  int index = -1;
+  std::string curr;
+  static std::vector<std::pair<char, std::vector<float> > > actions;
+
+  // TODO: Convert to switch statement
+  for (char c: this->path) {
+    // Arguments are seperated by spaces
+    if (c == ' ') {
+      if (!curr.empty()) {
+        actions[index].second.push_back(strtof(curr.c_str(), NULL));
+        curr = "";
+      }
+
+    // Commas seperate (x, y) pairs 
+    } else if (isdigit(c) || c == '.') {
+      curr += c;
+
+    } else if (c == ',') {
+      continue;
+
+    // A new command is found
+    } else {
+      index += 1;
+      actions.push_back(
+        std::pair<char, std::vector<float> >(c, std::vector<float>(0))
+      );
+    }    
+  }
+
+  // If the string ended, check for analyzed args
+  if (!curr.empty()) {
+    actions[index].second.push_back(strtof(curr.c_str(), NULL));
+    curr = "";
+  }
+
+  return actions;
+}

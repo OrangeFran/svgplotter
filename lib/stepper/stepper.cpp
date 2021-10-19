@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <driver/ledc.h>
-
 #include "stepper.h"
 
 #define TIMER_I(i) (i == 0 ? LEDC_TIMER_0 : LEDC_TIMER_1)
@@ -8,22 +7,20 @@
 
 // TODO: measure/calculate exact mm per step
 // Current number based on trial and error
-float perstep = 0.01;
-                // 0.009817477;
-                // 0.019625;
-                // 0.07925;
-
-// Pins to set direction and move: { leftPin, rightPin }
-int dirPins[2] = {16, 18};
-int stepPins[2] = {17, 19};
-
-// Pins to control state of motors
-int enPin = 12;
-int resPin = 33;
-int sleepPin = 32;
-
+const float perstep = 0.01;
 // Global turned on state of motors
 bool motorState = false;
+
+// Pins to control state of motors
+const int enPin = 12;
+const int resPin = 33;
+const int sleepPin = 32;
+const int penPin = 22;
+
+// Pins to set direction and move
+// { leftPin, rightPin }
+const int dirPins[2] = { 16, 18 };
+const int stepPins[2] = { 17, 19 };
 
 // Turn the controlboard, motors on
 void setMotorState(bool on) {
@@ -63,10 +60,7 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   const esp_timer_create_args_t stop_timer_args = {
     // Function to stop the PWM signal
     .callback = [](void *index){
-      // ledcWrite(*((int*)index) * 2, 0);
       ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(*(int *)index));
-      // ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-      // Serial.printf("Reset timer %d on channel %d (%d)!\n", TIMER_I(*(int *)index), CHANNEL_I(*(int *)index), *(int *)index);
     },
     .arg = &this->index,
     .dispatch_method = ESP_TIMER_TASK,
@@ -104,7 +98,9 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
 void StepperMotor::setVelocity(int velocity, bool shorter) {
   // Velocity in sps
   this->velocity = velocity;
+
   // Set the direction
+  //  counter-clockwise -> 0, clockwise -> 1
   digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
   // Velocity specifies the delay in microseconds
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index), (int)this->velocity); 
@@ -135,6 +131,5 @@ int StepperMotor::start(int delay) {
 int StepperMotor::stop() {
   ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-  // ledcWrite(this->index * 2, 0);
   return 0;
 }

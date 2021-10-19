@@ -1,7 +1,16 @@
-struct SVG {
-  float viewBox[4];
-  // The paths will be parsed and executed simultaneously
-  std::string path;
+#ifndef PARSER_H
+#define PARSER_H
+
+#include <vector>
+
+class SVG {
+  public:
+    float viewBox[4];
+    std::string path;
+
+    // Constructor
+    SVG(std::string);
+    std::vector<std::pair<char, std::vector<float> > > followPath(void);
 };
 
-struct SVG parseSVG(std::string);
+#endif

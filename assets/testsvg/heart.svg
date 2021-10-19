@@ -1,0 +1,5 @@
+<!-- A heart: tests moving and drawing bezier cuves -->
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M100 141.015C129.833 101.681 171.6 32.0145 100 68.0145" stroke="black"/>
+<path d="M99.5341 141.015C69.7007 101.681 27.9341 32.0145 99.5341 68.0145" stroke="black"/>
+</svg>

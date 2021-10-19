@@ -1,163 +1,38 @@
-// #include <pthread.h>
-#include <thread>
 #include <Arduino.h>
 
 #include "joystick.h"
 #include "stepper.h"
 #include "parser.h"
-
-// The whiteboard (in mm)
-float boardWidth = 1930.0;
-float boardHeight = 1170.0;
-// In steps per second (sps)
-// Delay of 500 µs in rps: 2000 sps
-float baseVelocity = 2000.0;
+#include "plotter.h"
 
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
 
-typedef struct Point {
-  float x;
-  float y;
+Point start = Point(0, 0);
+float *startStringLength = start.calculatePosition();
 
-  // Calculate the length of the string at
-  // the point (x, y) with the law of Pythagoras
-  float *calculatePosition() {
-    float newS1 = sqrt(pow(boardWidth/2 + this->x, 2) + pow(boardHeight - this->y, 2));
-    float newS2 = sqrt(pow(boardWidth/2 - this->x, 2) + pow(boardHeight - this->y, 2));
-    // Keyword `static` makes sure that the array
-    // is not deleted (out of scope) after the return statement
-    static float position[2] = { newS1, newS2 };
-    return position;
-  };
+Servo pen = Servo(penPin);
 
-} Point;
-
-typedef struct Position {
-  Point point;
-  float stringLength[2];
-} Position;
-
-// // The current position (s1, s2)
-// // s1 = left string, s2 = right string
-// float initialPosition = sqrt(pow(boardWidth/2, 2) + pow(boardHeight, 2));
-// float position[2] = {initialPosition, initialPosition};
-
-Position currPos = Position {
-  .point = Point { .x = 0, .y = 0 },
-  .stringLength = *(Point { .x = 0, .y = 0 }).calculatePosition(),
+Plotter plotter = {
+  .pos = start, 
+  // NOTE: Better way?
+  .stringLength = { startStringLength[0], startStringLength[1] },
+  .stepper1 = stepper1,
+  .stepper2 = stepper2,
+  .pen =  pen,
 };
-
-// Move to a coordinate
-int goTo(Point p) {
-  float *newPos = p.calculatePosition(); 
-  // Calculate the necessary movement
-  float distanceS1 = newPos[0] - currPos.stringLength[0];
-  float distanceS2 = newPos[1] - currPos.stringLength[1];
-  // Update the position
-  currPos.point = p;
-  currPos.stringLength[0] = newPos[0];
-  currPos.stringLength[1] = newPos[1];
-
-  // TODO: round() or int()
-  int stepsS1 = round(abs(distanceS1)/perstep);
-  int stepsS2 = round(abs(distanceS2)/perstep);
-
-  int velocityS1, velocityS2;
-  // The velocity for the shorter distance will
-  // be a fraction of the base velocity of the longer distance
-  if (stepsS1 > stepsS2) {
-    velocityS1 = baseVelocity;
-    velocityS2 = round((float)stepsS2/(float)stepsS1 * baseVelocity);
-  } else {
-    velocityS2 = baseVelocity;
-    velocityS1 = round((float)stepsS1/(float)stepsS2 * baseVelocity);
-  }
-
-  int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
-  int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
-
-  Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
-  Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
-  Serial.printf("New position:  %f, %f\n", currPos.point.x, currPos.point.y);
-  Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
-  Serial.printf("Delay for S1: %d\n", delayTimeS1);
-  Serial.printf("Delay for S2: %d\n", delayTimeS2);
-
-  // NOTE: Other approaches tried:
-  //         - seperate threads for each motor
-  //           -> failed, because `vTaskDelay` is only able to
-  //              delay with a precision of 1ms 
-
-  stepper1.setVelocity(velocityS1, distanceS1 < 0);
-  stepper2.setVelocity(velocityS2, distanceS2 < 0);
-
-  stepper1.start(delayTimeS1);
-  stepper2.start(delayTimeS2);
-
-  // Wait for the timers to trigger a stop
-  delayMicroseconds(esp_timer_get_next_alarm() - esp_timer_get_time());
-  // NOTE: Needed?
-  int next_alarm = esp_timer_get_next_alarm() - esp_timer_get_time();
-  if (next_alarm > 0) {
-    delayMicroseconds(next_alarm);
-  };
-
-  return 0;
-}
-
-// Implementation of De Casteljau's algorithm
-// parametric function with `t` -> move t from 0 to 1
-// `B(t) = (1 - t)^2 P_0 + 2t (1 - t) P_1 + t^2 P_2`
-int bezierCurve(Point p0, Point p1, Point p2) {
-  // `accuracy` defines the amount of steps between
-  float x, y;
-  float increase = 1.0/10.0;
-  // Move parameter t from 0.0 to 1.0
-  for (float t = increase; t < 1.0 + increase; t += increase) {
-    x = pow((1.0 - t), 2) * p0.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
-    y = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
-    // Serial.printf("Points: %f, %f\n", x, y);
-    // Serial.printf("T: %f\n", t);
-    if (goTo(Point{x, y}) != 0) {
-      Serial.println("Failed to move!");
-    }
-    delay(100);
-  }
-  return 0;
-}
 
 void setup() {
   Serial.begin(9600);
   setMotorState(true);
-
-  delay(5000);
-
-  // // A simple square
-  // goTo(Point{0, 100});
-  // delay(1000);
-  // goTo(Point{100, 100});
-  // delay(1000);
-  // goTo(Point{100, 0});
-  // delay(1000);
-  // goTo(Point{0, 0});
-
-  // goTo(Point{100, 100});
-  bezierCurve(
-    Point{ .x = 0, .y = 0 },
-    Point{ .x = 0, .y = 100 },
-    Point{100, 100}
-  );
-  delay(1000);
-  goTo(Point{0, 0});
-  // bezierCurve(Point{100, 100}, Point{50, 50}, Point{0, 0});
+  delay(2000);
 
   // Disconnect the pins from the PWM signal
-  ledcDetachPin(stepper1.stepPin);
-  ledcDetachPin(stepper2.stepPin);
+  ledcDetachPin(plotter.stepper1.stepPin);
+  ledcDetachPin(plotter.stepper2.stepPin);
+
+  // Fall back to joystick control
+  joystick(plotter);
 }
 
-void loop() {
-  // Fall back to joystick control
-  joystick();
-}
+void loop() {}
