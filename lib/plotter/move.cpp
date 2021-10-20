@@ -21,11 +21,11 @@ int Plotter::moveTo(Point p) {
   // The velocity for the shorter distance will
   // be a fraction of the base velocity of the longer distance
   if (stepsS1 > stepsS2) {
-    velocityS1 = baseVelocity;
-    velocityS2 = round((float)stepsS2/(float)stepsS1 * baseVelocity);
+    velocityS1 = maxVelocity;
+    velocityS2 = round((float)stepsS2/(float)stepsS1 * maxVelocity);
   } else {
-    velocityS2 = baseVelocity;
-    velocityS1 = round((float)stepsS1/(float)stepsS2 * baseVelocity);
+    velocityS2 = maxVelocity;
+    velocityS1 = round((float)stepsS1/(float)stepsS2 * maxVelocity);
   }
 
   int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
@@ -43,19 +43,21 @@ int Plotter::moveTo(Point p) {
   //           -> failed, because `vTaskDelay` is only able to
   //              delay with a precision of 1ms 
 
-  this->stepper1.setVelocity(velocityS1, distanceS1 < 0);
-  this->stepper2.setVelocity(velocityS2, distanceS2 < 0);
+  this->stepper1.setAcceleration(velocityS1/10.0, velocityS1, distanceS1 < 0);
+  this->stepper2.setAcceleration(velocityS2/10.0, velocityS2, distanceS2 < 0);
 
   this->stepper1.start(delayTimeS1);
   this->stepper2.start(delayTimeS2);
 
   // Wait for the timers to trigger a stop
-  delayMicroseconds(esp_timer_get_next_alarm() - esp_timer_get_time());
-  // NOTE: Needed?
-  int next_alarm = esp_timer_get_next_alarm() - esp_timer_get_time();
-  if (next_alarm > 0) {
+  while (true) {
+    int next_alarm = esp_timer_get_next_alarm() - esp_timer_get_time();
+    // All alarms are through 
+    if (next_alarm > delayTimeS1) {
+      break;
+    }
     delayMicroseconds(next_alarm);
-  };
+  }
 
   return 0;
 }

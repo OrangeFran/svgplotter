@@ -17,22 +17,30 @@ extern const int stepPins[2];
 
 // One stepper motor
 class StepperMotor {
-  public:
-    // Left motor -> 0, right motor -> 1
+  private:
     int index; 
-    // In steps per second (= Hz)
-    float velocity; 
-    esp_timer_handle_t timer;
     int dirPin;
     int stepPin;
 
+    int accel;
+    int stepsToDo;
+    // In steps per second (= Hz)
+    int start_velocity;
+    int current_velocity;
+    int target_velocity;
+
+    void step(void);
+    void setVelocity(int);
+
+  public:
+    esp_timer_handle_t stop_timer;
+    esp_timer_handle_t accel_timer;
+
     // Constructor
     StepperMotor(int, int, int);
-    void step(void);
-    void setVelocity(int, bool);
     // PWM signal controls
+    int setAcceleration(int, int, bool);
     int start(int);
-    int stop(void);
 };
 
 // Old function still needed for lib/joystick

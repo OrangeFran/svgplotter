@@ -8,7 +8,9 @@
 // Whiteboard
 extern const float boardWidth;
 extern const float boardHeight;
-extern const float baseVelocity;
+
+extern const float initialVelocity;
+extern const float maxVelocity;
 
 // Two-dimensional point
 class Point {
