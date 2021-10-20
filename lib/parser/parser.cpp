@@ -1,9 +1,5 @@
-// Parse an svg file
-// Only the <path> and <svg> elements are needed
-
-// #include <iostream>
-
 #include <map>
+#include <Arduino.h>
 // NOTE:: Needed?
 #include <vector>
 #include <string>
@@ -150,21 +146,22 @@ std::vector<std::pair<char, std::vector<float> > > SVG::followPath() {
   // TODO: Convert to switch statement
   for (char c: this->path) {
     // Arguments are seperated by spaces
-    if (c == ' ') {
+    if (c == ' ' || c == ',') {
       if (!curr.empty()) {
         actions[index].second.push_back(strtof(curr.c_str(), NULL));
         curr = "";
       }
 
-    // Commas seperate (x, y) pairs 
-    } else if (isdigit(c) || c == '.') {
+    } else if (isdigit(c) || c == '.' || c == '-') {
       curr += c;
-
-    } else if (c == ',') {
-      continue;
 
     // A new command is found
     } else {
+      // Add the number to the vector if there is one
+      if (!curr.empty()) {
+        actions[index].second.push_back(strtof(curr.c_str(), NULL));
+        curr = "";
+      }
       index += 1;
       actions.push_back(
         std::pair<char, std::vector<float> >(c, std::vector<float>(0))
