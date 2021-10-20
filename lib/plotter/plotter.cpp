@@ -7,7 +7,7 @@
 const float boardWidth = 1930.0;    // mm
 const float boardHeight = 1170.0;   // mm
 // Delay of 500 µs in sps: 2000Hz
-const float baseVelocity = 2000.0;  // Hz
+const float baseVelocity = 1000.0;  // Hz
 
 Point::Point(float x, float y) {
   this->x = x;

@@ -5,7 +5,6 @@
 int Plotter::moveTo(Point p) {
   // Calculate the necessary movement
   float *newPos = p.calculatePosition(); 
-  Serial.printf("New pos: %f, %f", newPos[0], newPos[1]);
   float distanceS1 = newPos[0] - this->stringLength[0];
   float distanceS2 = newPos[1] - this->stringLength[1];
   // Update the position

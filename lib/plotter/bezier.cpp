@@ -10,9 +10,9 @@
 int Plotter::bezierQuadratic(Point p1, Point p2) {
   // `accuracy` defines the amount of steps between
   float x, y;
-  float increase = 1.0/20.0;
+  float increase = 1.0/50.0;
   // Move parameter t from 0.0 to 1.0
-  for (float t = increase; t < 1.0 + increase; t += increase) {
+  for (float t = increase; t <= (float)1.0; t += increase) {
     x = pow((1.0 - t), 2) * this->pos.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
     y = pow((1.0 - t), 2) * this->pos.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
     if (this->moveTo(Point{x, y}) != 0) {
@@ -27,8 +27,8 @@ int Plotter::bezierQuadratic(Point p1, Point p2) {
 int Plotter::bezierCubic(Point p1, Point p2, Point p3) {
   // `accuracy` defines the amount of steps between
   float x, y;
-  float increase = 1.0/20.0;
-  for (float t = increase; t < 1.0 + increase; t += increase) {
+  float increase = 1.0/50.0;
+  for (float t = increase; t <= (float)1.0; t += increase) {
     x = pow((1.0 - t), 3) * this->pos.x + 3.0 * t * pow((1.0 - t), 2) * p1.x + 3.0 * pow(t, 2) * (1.0 - t) * p2.x + pow(t, 3) * p3.x;
     y = pow((1.0 - t), 3) * this->pos.y + 3.0 * t * pow((1.0 - t), 2) * p1.y + 3.0 * pow(t, 2) * (1.0 - t) * p2.y + pow(t, 3) * p3.y;
     if (this->moveTo(Point{x, y}) != 0) {
