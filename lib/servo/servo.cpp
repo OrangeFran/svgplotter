@@ -19,6 +19,7 @@ int Servo::penDown() {
     ledcWrite(8, (int)(1.0/20.0 * 256.0));
     delay(200);
     ledcWrite(8, 0);
+    delay(200);
   }
   return 0;
 }
@@ -29,6 +30,7 @@ int Servo::penUp() {
     ledcWrite(8, (int)(1.5/20.0 * 256.0));
     delay(200);
     ledcWrite(8, 0);
+    delay(200);
   }
   return 0;
 }
