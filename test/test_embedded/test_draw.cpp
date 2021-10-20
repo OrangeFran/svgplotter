@@ -21,11 +21,6 @@ Plotter plotter = {
   .pen = pen,
 };
 
-void return_to_start() {
-  plotter.pen.penUp();
-  plotter.moveTo(start);
-}
-
 // Manual
 
 void test_draw_line_square() {
@@ -67,8 +62,8 @@ void test_draw_svg_square() {
 void test_draw_svg_heart() {
   const std::string heart = 
     "<svg width=\"200\" height=\"200\" viewBox=\"0 0 200 200\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">"
-      "<path d=\"M 100 141.015 C 129.833 101.681 171.6 32.0145 100 68.0145\" stroke=\"black\"/>"
-      "<path d=\"M 99.5341 141.015 C 69.7007 101.681 27.9341 32.0145 99.5341 68.0145\" stroke=\"black\"/>"
+      "<path d=\"M100 58.0145C130.185 97.341 172.444 166.995 100 131.002\" stroke=\"black\"/>"
+      "<path d=\"M99.5341 58C69.7007 97.3333 27.9341 167 99.5341 131\" stroke=\"black\"/>"
     "</svg>";
   SVG svg = SVG(heart);
   plotter.executeSVG(svg);
@@ -83,17 +78,19 @@ void setup() {
 
   UNITY_BEGIN();
 
-  RUN_TEST(test_draw_line_square);
+  // RUN_TEST(test_draw_line_square);
   // RUN_TEST(test_draw_line_triangle);
   // RUN_TEST(test_draw_bezier_quadratic);
-  RUN_TEST(test_draw_bezier_cubic);
+  // RUN_TEST(test_draw_bezier_cubic);
 
   // RUN_TEST(test_draw_svg_square);
-  // RUN_TEST(test_draw_svg_heart);
+  RUN_TEST(test_draw_svg_heart);
+
+  // Return to start
+  plotter.pen.penUp();
+  plotter.moveTo(start);
 
   UNITY_END();
-
-  return_to_start();
 }
 
 void loop() {}
