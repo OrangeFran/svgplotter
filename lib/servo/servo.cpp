@@ -17,7 +17,7 @@ int Servo::penDown() {
   if (!down) {
     this->down = true;
     ledcWrite(8, (int)(1.0/20.0 * 256.0));
-    delay(500);
+    delay(200);
     ledcWrite(8, 0);
   }
   return 0;
@@ -27,7 +27,7 @@ int Servo::penUp() {
   if (down) {
     this->down = false;
     ledcWrite(8, (int)(1.5/20.0 * 256.0));
-    delay(500);
+    delay(200);
     ledcWrite(8, 0);
   }
   return 0;
