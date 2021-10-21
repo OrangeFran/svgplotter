@@ -7,7 +7,8 @@
 
 // TODO: measure/calculate exact mm per step
 // Current number based on trial and error
-const float perstep = 0.01;
+const float perstep = // 0.01;
+                      0.009817477;
 // Global turned on state of motors
 bool motorState = false;
 

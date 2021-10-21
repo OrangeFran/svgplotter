@@ -128,15 +128,6 @@ SVG::SVG(std::string str) {
 
 // Docs: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
-// // List of { command, nargs } pairs for
-// // every possible <path> command
-// const std::map<char, int> commands = {
-//   { 'M', 2 }, { 'm', 2 },
-//   { 'L', 2 }, { 'l', 2 },
-//   { 'H', 1 }, { 'h', 1 },
-//   { 'V', 1 }, { 'v', 1 },
-// };
-
 // Parse path
 std::vector<std::pair<char, std::vector<float> > > SVG::followPath() {
   int index = -1;

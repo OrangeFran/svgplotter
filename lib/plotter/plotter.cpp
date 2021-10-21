@@ -36,7 +36,11 @@ int Plotter::executeSVG(SVG svg) {
   for (int i = 0; i < res.size(); i++) {
     // Get the next element
     std::pair<char, std::vector<float> > c = res[i];
-    Serial.printf("Executing '%c %f %f'\n", c.first, c.second[0], c.second[1]);
+    Serial.printf("--> %c ", c.first);
+    for (int i = 0; i < c.second.size(); i += 1) {
+      Serial.printf("%f ", c.second[i]);
+    }
+    Serial.printf("\n");
 
     switch (c.first) {
       // Move to
@@ -97,7 +101,7 @@ int Plotter::executeSVG(SVG svg) {
       case 'z':
       case 'Z':
         // Point `start` saved in the beginning
-        this->pen.penDown();
+        this->pen.penUp();
         this->moveTo(start);
         break;
 
@@ -168,10 +172,10 @@ int Plotter::executeSVG(SVG svg) {
         // `P_1 = 2 * P_0 - P_old_2`
          x1 = 2.0 * this->pos.x - res[i - 1].second[2];
          y1 = 2.0 * this->pos.y - res[i - 1].second[3];
-         x2 = c.second[2];
-         y2 = c.second[3];
-         x3 = c.second[4];
-         y3 = c.second[5];
+         x2 = c.second[0];
+         y2 = c.second[1];
+         x3 = c.second[2];
+         y3 = c.second[3];
         // Relative coordinates
         if (c.first == 's') {
           x1 += this->pos.x;
