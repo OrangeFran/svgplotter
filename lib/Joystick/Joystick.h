@@ -3,6 +3,6 @@
 
 #include "plotter.h"
 
-void joystick(Plotter);
+int *joystick(Plotter);
 
 #endif

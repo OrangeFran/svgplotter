@@ -5,10 +5,8 @@
 #define TIMER_I(i) (i == 0 ? LEDC_TIMER_0 : LEDC_TIMER_1)
 #define CHANNEL_I(i) (i == 0 ? LEDC_CHANNEL_0 : LEDC_CHANNEL_1)
 
-// TODO: measure/calculate exact mm per step
-// Current number based on trial and error
-const float perstep = // 0.01;
-                      0.009817477;
+// 20 * π / (200 * 32)
+const float perstep = 0.009817477;
 // Global turned on state of motors
 bool motorState = false;
 
@@ -54,6 +52,10 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   pinMode(this->dirPin, OUTPUT);
   pinMode(this->stepPin, OUTPUT);
 
+}
+
+// Connect the pins to the PWM signal
+void StepperMotor::setup() {
   // API documentation for `esp_timer`
   // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/esp_timer.html
 
@@ -128,9 +130,13 @@ int StepperMotor::start(int delay) {
   return 0;
 }
 
-// Stop the motor (= set dutyCycle to 0)
+// Stop the motor
 int StepperMotor::stop() {
   ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
   return 0;
+}
+
+void StepperMotor::detachPin() {
+  ledcDetachPin(this->stepPin);
 }

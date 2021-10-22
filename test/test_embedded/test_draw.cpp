@@ -8,14 +8,14 @@ StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]);
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]);
 
 Point start = Point(0, 0);
-float *startStringLength = start.calculatePosition();
+float *startStrings = start.getStrings();
 
 Servo pen = Servo(penPin);
 
 Plotter plotter = {
   .pos = start, 
   // NOTE: Better way?
-  .stringLength = { startStringLength[0], startStringLength[1] },
+  .strings = { startStrings[0], startStrings[1] },
   .stepper1 = stepper1,
   .stepper2 = stepper2,
   .pen = pen,

@@ -19,20 +19,21 @@ class Point {
     // Constructor
     Point(float, float);
     // Calculates the string length for the point
-    float *calculatePosition(void);
+    float *getStrings(void);
 };
 
 // Position of the plotter
 class Plotter {
   public:
     Point pos;
-    float stringLength[2];
+    float strings[2];
     StepperMotor stepper1; // left
     StepperMotor stepper2; // right
     Servo pen;
 
     // No constructor
     int moveTo(Point);
+    int bezierLinear(Point);
     int bezierQuadratic(Point, Point);
     int bezierCubic(Point, Point, Point);
     int executeSVG(SVG);

@@ -15,9 +15,6 @@ long int maxdelay = 5000;
 long int stepdelay = maxdelay;
 int stepnum = 1;
 
-void penDown();
-void PenUp();
-
 int dirs[] = {0,0};
 int shorter[] = {0,1};
 void setDir(int stepper, int dir) {
@@ -30,10 +27,12 @@ void setDirs(int d0, int d1) {
   setDir(1, d1);
 }
 
-void joystick(Plotter plotter) {
+int *joystick(Plotter plotter) {
   pinMode(joyPins[0], INPUT);
   pinMode(joyPins[1], INPUT);
   pinMode(joyPins[2], INPUT_PULLUP);
+
+  static int steps[2] = { 0, 0 };
   while (true) {
     int a[2];
     a[0] = analogRead(joyPins[0]);
@@ -62,12 +61,24 @@ void joystick(Plotter plotter) {
   
     if (m0!=0) {
       step(0);
+      if (m0 < 0) {
+        steps[0]--;
+      } else {
+        steps[0]++;
+      }
     }
     if (m1!=0) {
       step(1);
+      if (m1 < 0) {
+        steps[1]--;
+      } else {
+        steps[1]++;
+      }
     }
     if (!sw) {
-      plotter.pen.toggle(); 
+      // plotter.pen.toggle(); 
+      break;
     }
   }
+  return steps;
 }

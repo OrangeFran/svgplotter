@@ -4,8 +4,8 @@
 #include "parser.h"
 
 // Whiteboard
-const float boardWidth = 1930.0;    // mm
-const float boardHeight = 1170.0;   // mm
+const float boardWidth = 1970.0;    // mm
+const float boardHeight = 1185.0;   // mm
 // Delay of 500 µs in sps: 2000Hz
 const float baseVelocity = 1000.0;  // Hz
 
@@ -16,7 +16,7 @@ Point::Point(float x, float y) {
 
 // Calculate the length of the string at
 // the point (x, y) with the law of Pythagoras
-float *Point::calculatePosition() {
+float *Point::getStrings() {
   // Keyword `static` makes sure that the array
   // is not deleted (out of scope) after the return statement
   static float position[2];
@@ -81,7 +81,8 @@ int Plotter::executeSVG(SVG svg) {
           x1 += this->pos.x;
         }
         this->pen.penDown();
-        this->moveTo(Point(x1, y1));
+        Serial.println("Bezier linear");
+        this->bezierLinear(Point(x1, y1));
         break;
 
       // Vertical line

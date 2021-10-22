@@ -9,9 +9,9 @@ int Plotter::moveTo(Point p) {
   // );
 
   // Calculate the necessary movement
-  float *newPos = p.calculatePosition(); 
-  float distanceS1 = newPos[0] - this->stringLength[0];
-  float distanceS2 = newPos[1] - this->stringLength[1];
+  float *newPos = p.getStrings(); 
+  float distanceS1 = newPos[0] - this->strings[0];
+  float distanceS2 = newPos[1] - this->strings[1];
 
   int stepsS1 = round(abs(distanceS1)/perstep);
   int stepsS2 = round(abs(distanceS2)/perstep);
@@ -28,6 +28,13 @@ int Plotter::moveTo(Point p) {
     velocityS2 = baseVelocity; 
     int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
+    // // Debug output?
+    // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
+    // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+    // Serial.printf("New position:  %f, %f\n", p.x, p.y);
+    // Serial.printf("Velocity: %d\n", velocityS2);
+    // Serial.printf("Delay for S2: %d\n", delayTimeS2);
+
     this->stepper2.setVelocity(velocityS2, distanceS2 < 0);
     this->stepper2.start(delayTimeS2);
     // Wait for the timers to trigger a stop
@@ -36,6 +43,13 @@ int Plotter::moveTo(Point p) {
   } else if (stepsS2 == 0) {
     velocityS1 = baseVelocity; 
     int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
+
+    // // Debug output?
+    // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
+    // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+    // Serial.printf("New position:  %f, %f\n", p.x, p.y);
+    // Serial.printf("Velocity: %d\n", velocityS1);
+    // Serial.printf("Delay for S1: %d\n", delayTimeS1);
 
     this->stepper1.setVelocity(velocityS1, distanceS1 < 0);
     this->stepper1.start(delayTimeS1);
@@ -58,13 +72,13 @@ int Plotter::moveTo(Point p) {
     int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
     int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
-    // // Debug output?
-    // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
-    // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
-    // Serial.printf("New position:  %f, %f\n", this->pos.x, this->pos.y);
-    // Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
-    // Serial.printf("Delay for S1: %d\n", delayTimeS1);
-    // Serial.printf("Delay for S2: %d\n", delayTimeS2);
+    // Debug output?
+    Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
+    Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+    Serial.printf("New position:  %f, %f\n", p.x, p.y);
+    Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
+    Serial.printf("Delay for S1: %d\n", delayTimeS1);
+    Serial.printf("Delay for S2: %d\n", delayTimeS2);
 
     // NOTE: Other approaches tried:
     //         - seperate threads for each motor
@@ -90,8 +104,8 @@ int Plotter::moveTo(Point p) {
 
   // Update the position
   this->pos = p;
-  this->stringLength[0] = newPos[0];
-  this->stringLength[1] = newPos[1];
+  this->strings[0] = newPos[0];
+  this->strings[1] = newPos[1];
 
   return 0;
 }
