@@ -32,16 +32,10 @@ void setMotorState(bool on) {
   motorState = on;
 }
 
-// Old function still needed for lib/joystick
-// Do one step with the specified motor
-void step(int stepper) {
-  digitalWrite(stepPins[stepper], HIGH);
-  delayMicroseconds(2);
-  digitalWrite(stepPins[stepper], LOW);
-}
-
 // Constructor
-StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
+StepperMotor::StepperMotor(
+  int index, int dirPin, int stepPin
+) {
   // 0 or 1
   this->index = index;
   // Pins
@@ -51,10 +45,7 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   // Set the direction pin to OUTPUT
   pinMode(this->dirPin, OUTPUT);
   pinMode(this->stepPin, OUTPUT);
-}
 
-// Connect the pins to the PWM signal
-void StepperMotor::setup() {
   // API documentation for `esp_timer`
   // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/esp_timer.html
 
@@ -93,16 +84,36 @@ void StepperMotor::setup() {
   };
   ledc_channel_config(&pwm_channel_args);
 
+  this->attached = true;
+
   // NOTE: Needed?
   ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
 }
 
+// Connect the pin to the PWM signal
+void StepperMotor::attachPin() {
+  if (!this->attached) {
+    this->attached = true;
+    ledcAttachPin(this->stepPin, CHANNEL_I(this->index));
+  }
+}
+
+// Disconnect the pin from the PWM signal
+void StepperMotor::detachPin() {
+  if (this->attached) {
+    this->attached = false;
+    ledcDetachPin(this->stepPin);
+  }
+}
+
 // Do one step
 void StepperMotor::step() {
-  digitalWrite(this->stepPin, HIGH);
-  delayMicroseconds(2);
-  digitalWrite(this->stepPin, LOW);
+  if (!this->attached) {
+    digitalWrite(this->stepPin, HIGH);
+    delayMicroseconds(2);
+    digitalWrite(this->stepPin, LOW);
+  }
 }
 
 // Set the direction (counter-clockwise -> 0, clockwise -> 1)
@@ -111,35 +122,35 @@ void StepperMotor::setDirection(bool shorter) {
 }
 
 void StepperMotor::setVelocity(int velocity, bool shorter) {
-  // Velocity in sps
-  this->velocity = velocity;
+  if (this->attached) {
+    // Velocity in sps
+    this->velocity = velocity;
 
-  this->setDirection(shorter);
-  // Apply the velocity
-  ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index), (int)this->velocity); 
+    this->setDirection(shorter);
+    // Apply the velocity
+    ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index), (int)this->velocity); 
 
-  // The duty cycle does not have to be accurate to the point
-  // Delay of 2 microseconds = freq of 500000Hz
-  int dutyCycle = ceil((float)this->velocity/500000.0 * 16383.0);
-  // Use one if dutyCycle is too small
-  ledc_set_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index), dutyCycle == 0 ? 1 : dutyCycle);
-  ledc_update_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index)); 
+    // The duty cycle does not have to be accurate to the point
+    // Delay of 2 microseconds = freq of 500000Hz
+    int dutyCycle = ceil((float)this->velocity/500000.0 * 16383.0);
+    // Use one if dutyCycle is too small
+    ledc_set_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index), dutyCycle == 0 ? 1 : dutyCycle);
+    ledc_update_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index)); 
+  }
 }
 
 // Make the string for a certain motor longer/shorter
-int StepperMotor::start(int delay) {
-  esp_timer_start_once(this->timer, delay);
-  ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
-  return 0;
+void StepperMotor::start(int delay) {
+  if (this->attached) {
+    esp_timer_start_once(this->timer, delay);
+    ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
+  }
 }
 
 // Stop the motor
-int StepperMotor::stop() {
-  ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-  ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-  return 0;
-}
-
-void StepperMotor::detachPin() {
-  ledcDetachPin(this->stepPin);
+void StepperMotor::stop() {
+  if (this->attached) {
+    ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
+    ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
+  }
 }

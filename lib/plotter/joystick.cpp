@@ -24,6 +24,9 @@ void Plotter::joystick() {
   pinMode(joyPins[0], INPUT);
   pinMode(joyPins[1], INPUT);
   pinMode(joyPins[2], INPUT_PULLUP);
+  // Detach pins
+  this->stepper1.detachPin();
+  this->stepper2.detachPin();
 
   long int lastMove = 0;
   long int maxdelay = 5000;
@@ -93,4 +96,8 @@ void Plotter::joystick() {
   b = sqrt(pow(this->strings[0], 2) - pow(a, 2));
   this->pos.x = a - boardWidth / 2.0;
   this->pos.y = boardHeight - b;
+
+  // Attach pins again
+  this->stepper1.attachPin();
+  this->stepper2.attachPin();
 }

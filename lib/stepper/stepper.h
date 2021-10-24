@@ -21,24 +21,23 @@ class StepperMotor {
     int dirPin;
     int stepPin;
     esp_timer_handle_t timer;
+    bool attached;
 
   public:
     int index; // Left motor -> 0, right motor -> 1
     float velocity; // Steps per second (= Hz)
 
     StepperMotor(int, int, int);
-    void setup(void);
+
+    void attachPin(void);
     void detachPin(void);
 
     void step(void);
     void setDirection(bool);
     void setVelocity(int, bool);
     // PWM signal controls
-    int start(int);
-    int stop(void);
+    void start(int);
+    void stop(void);
 };
-
-// Old function still needed for lib/joystick
-void step(int);
 
 #endif
