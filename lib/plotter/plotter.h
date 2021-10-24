@@ -8,7 +8,9 @@
 // Whiteboard
 extern const float boardWidth;
 extern const float boardHeight;
+
 extern const float baseVelocity;
+extern const int joyPins[3];
 
 // Two-dimensional point
 class Point {
@@ -27,16 +29,17 @@ class Plotter {
   public:
     Point pos;
     float strings[2];
-    StepperMotor stepper1; // left
-    StepperMotor stepper2; // right
+    StepperMotor stepper1; // Left
+    StepperMotor stepper2; // Right
     Servo pen;
 
-    // No constructor
     int moveTo(Point);
     int bezierLinear(Point);
     int bezierQuadratic(Point, Point);
     int bezierCubic(Point, Point, Point);
+
     int executeSVG(SVG);
+    void joystick(void);
 };
 
 #endif

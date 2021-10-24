@@ -17,21 +17,21 @@ extern const int stepPins[2];
 
 // One stepper motor
 class StepperMotor {
-  public:
-    // Left motor -> 0, right motor -> 1
-    int index; 
-    // In steps per second (= Hz)
-    float velocity; 
-    esp_timer_handle_t timer;
+  private:
     int dirPin;
     int stepPin;
+    esp_timer_handle_t timer;
 
-    // Constructor
+  public:
+    int index; // Left motor -> 0, right motor -> 1
+    float velocity; // Steps per second (= Hz)
+
     StepperMotor(int, int, int);
-    void step(void);
     void setup(void);
     void detachPin(void);
 
+    void step(void);
+    void setDirection(bool);
     void setVelocity(int, bool);
     // PWM signal controls
     int start(int);

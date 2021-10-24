@@ -6,6 +6,7 @@
 // Whiteboard
 const float boardWidth = 1970.0;    // mm
 const float boardHeight = 1185.0;   // mm
+
 // Delay of 500 µs in sps: 2000Hz
 const float baseVelocity = 1000.0;  // Hz
 

@@ -51,7 +51,6 @@ StepperMotor::StepperMotor(int index, int dirPin, int stepPin) {
   // Set the direction pin to OUTPUT
   pinMode(this->dirPin, OUTPUT);
   pinMode(this->stepPin, OUTPUT);
-
 }
 
 // Connect the pins to the PWM signal
@@ -93,19 +92,30 @@ void StepperMotor::setup() {
     .hpoint = 0,
   };
   ledc_channel_config(&pwm_channel_args);
+
   // NOTE: Needed?
   ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
+}
+
+// Do one step
+void StepperMotor::step() {
+  digitalWrite(this->stepPin, HIGH);
+  delayMicroseconds(2);
+  digitalWrite(this->stepPin, LOW);
+}
+
+// Set the direction (counter-clockwise -> 0, clockwise -> 1)
+void StepperMotor::setDirection(bool shorter) {
+  digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
 }
 
 void StepperMotor::setVelocity(int velocity, bool shorter) {
   // Velocity in sps
   this->velocity = velocity;
 
-  // Set the direction
-  //  counter-clockwise -> 0, clockwise -> 1
-  digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
-  // Velocity specifies the delay in microseconds
+  this->setDirection(shorter);
+  // Apply the velocity
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index), (int)this->velocity); 
 
   // The duty cycle does not have to be accurate to the point
@@ -114,13 +124,6 @@ void StepperMotor::setVelocity(int velocity, bool shorter) {
   // Use one if dutyCycle is too small
   ledc_set_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index), dutyCycle == 0 ? 1 : dutyCycle);
   ledc_update_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index)); 
-}
-
-// Do one step
-void StepperMotor::step() {
-  digitalWrite(this->stepPin, HIGH);
-  delayMicroseconds(2);
-  digitalWrite(this->stepPin, LOW);
 }
 
 // Make the string for a certain motor longer/shorter
