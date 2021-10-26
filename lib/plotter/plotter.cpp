@@ -73,7 +73,8 @@ int Plotter::executeSVG(SVG svg) {
           y1 += this->pos.y - start.y;
         }
         this->pen.penDown();
-        this->bezierLinear(Point(x1, y1));
+        this->splitMove(Point(x1, y1));
+        // this->moveTo(Point(x1, y1));
         break;
 
       // Horizontal line
@@ -86,7 +87,8 @@ int Plotter::executeSVG(SVG svg) {
           x1 += this->pos.x;
         }
         this->pen.penDown();
-        this->bezierLinear(Point(x1, y1));
+        this->splitMove(Point(x1, y1));
+        // this->moveTo(Point(x1, y1));
         break;
 
       // Vertical line
@@ -99,7 +101,8 @@ int Plotter::executeSVG(SVG svg) {
           y1 += this->pos.y - start.y;
         }
         this->pen.penDown();
-        this->bezierLinear(Point(x1, y1));
+        this->splitMove(Point(x1, y1));
+        // this->moveTo(Point(x1, y1));
         break;
 
       // Close path

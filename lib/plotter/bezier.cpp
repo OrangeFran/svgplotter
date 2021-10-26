@@ -10,7 +10,7 @@
 int Plotter::bezierLinear(Point p1) {
   // `accuracy` defines the amount of steps between
   float x, y;
-  float accuracy = 50.0;
+  float accuracy = 20.0;
   float increase = 1.0/accuracy;
   // Move parameter t from 0.0 to 1.0
   for (float t = increase; t <= (float)1.0; t += increase) {
@@ -27,7 +27,7 @@ int Plotter::bezierLinear(Point p1) {
 int Plotter::bezierQuadratic(Point p1, Point p2) {
   // `accuracy` defines the amount of steps between
   float x, y;
-  float accuracy = 50.0;
+  float accuracy = 20.0;
   float increase = 1.0/accuracy;
   // Move parameter t from 0.0 to 1.0
   for (float t = increase; t <= (float)1.0; t += increase) {

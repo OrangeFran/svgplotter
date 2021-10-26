@@ -19,7 +19,10 @@ const int joyPins[3] = { 34, 35, 26 };
 //   setDir(1, d1);
 // }
 
-void Plotter::joystick() {
+// Move the plotter with the connected joystick
+// If draw is true, clicking the joystick results
+// in moving the pen
+void Plotter::joystick(bool draw) {
   // Setup all the pins
   pinMode(joyPins[0], INPUT);
   pinMode(joyPins[1], INPUT);
@@ -80,14 +83,22 @@ void Plotter::joystick() {
       }
     }
     if (!sw) {
-      // plotter.pen.toggle(); 
-      break;
+      if (draw) {
+        this->pen.toggle();
+      } else {
+        break;
+      }
     }
   }
 
+  // Serial.println("");
+
+  // Serial.printf("s1: %f, %f\n", this->strings[0], (float)steps[0]);
+  // Serial.printf("s2: %f, %f\n", this->strings[1], (float)steps[1]);
+
   // Calculate the string lengths
-  this->strings[0] = this->strings[0] - (float)steps[0] * perstep;
-  this->strings[1] = this->strings[1] - (float)steps[1] * perstep;
+  this->strings[0] = this->strings[0] + (float)steps[0] * perstep;
+  this->strings[1] = this->strings[1] + (float)steps[1] * perstep;
 
   // Calculate the coordinates
   // a^2 + b^2 = c_1^2; a_2^2 + b^2 = c_2^2
@@ -96,6 +107,10 @@ void Plotter::joystick() {
   b = sqrt(pow(this->strings[0], 2) - pow(a, 2));
   this->pos.x = a - boardWidth / 2.0;
   this->pos.y = boardHeight - b;
+
+  // Serial.printf("a: %f, b: %f\n", a, b);
+  // Serial.printf("x: %f, y: %f\n", this->pos.x, this->pos.y);
+  // Serial.printf("s1: %f, s2: %f\n", this->strings[0], this->strings[1]);
 
   // Attach pins again
   this->stepper1.attachPin();

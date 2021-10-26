@@ -34,12 +34,14 @@ class Plotter {
     Servo pen;
 
     int moveTo(Point);
+
+    int splitMove(Point);
     int bezierLinear(Point);
     int bezierQuadratic(Point, Point);
     int bezierCubic(Point, Point, Point);
 
     int executeSVG(SVG);
-    void joystick(void);
+    void joystick(bool);
 };
 
 #endif

@@ -3,11 +3,6 @@
 
 // Move to a coordinate
 int Plotter::moveTo(Point p) {
-  // Serial.printf(
-  //   "\bMoving from (%f, %f) to (%f, %f) ...",
-  //   this->pos.x, this->pos.y, p.x, p.y
-  // );
-
   // Calculate the necessary movement
   float *newPos = p.getStrings(); 
   float distanceS1 = newPos[0] - this->strings[0];
@@ -106,6 +101,22 @@ int Plotter::moveTo(Point p) {
   this->pos = p;
   this->strings[0] = newPos[0];
   this->strings[1] = newPos[1];
+
+  return 0;
+}
+
+int Plotter::splitMove(Point p) {
+  // Split a distance 10 times 
+  float x, y;
+  float increase[2] = { (p.x - this->pos.x) / 10.0, (p.y - this->pos.y) / 10.0 };
+  // Serial.printf("Increases: %f, %f\n", increase[0], increase[1]);
+  for (int i = 1; i <= 10; i++) {
+    x = this->pos.x + increase[0];
+    y = this->pos.y + increase[1];
+    // Serial.printf("Moving to %f, %f ...\n", x, y);
+    this->moveTo(Point(x, y));
+    delay(100);
+  }
 
   return 0;
 }
