@@ -20,17 +20,14 @@ class StepperMotor {
   private:
     int dirPin;
     int stepPin;
-    esp_timer_handle_t timer;
-    bool attached;
+    xTaskHandle *task;
 
   public:
     int index; // Left motor -> 0, right motor -> 1
-    float velocity; // Steps per second (= Hz)
+    int delay; // Delay in microseconds
+    int _steps;
 
     StepperMotor(int, int, int);
-
-    void attachPin(void);
-    void detachPin(void);
 
     void step(void);
     void setDirection(bool);

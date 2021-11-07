@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <driver/ledc.h>
 #include "stepper.h"
+#include <string>
 
 #define TIMER_I(i) (i == 0 ? LEDC_TIMER_0 : LEDC_TIMER_1)
 #define CHANNEL_I(i) (i == 0 ? LEDC_CHANNEL_0 : LEDC_CHANNEL_1)
@@ -36,84 +37,20 @@ void setMotorState(bool on) {
 StepperMotor::StepperMotor(
   int index, int dirPin, int stepPin
 ) {
-  // 0 or 1
   this->index = index;
-  // Pins
   this->dirPin = dirPin;
   this->stepPin = stepPin;
 
-  // Set the direction pin to OUTPUT
+  // Set the pins to OUTPUT
   pinMode(this->dirPin, OUTPUT);
   pinMode(this->stepPin, OUTPUT);
-
-  // API documentation for `esp_timer`
-  // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/esp_timer.html
-
-  // Timer with callback to stop the pwm signal
-  const esp_timer_create_args_t stop_timer_args = {
-    // Function to stop the PWM signal
-    .callback = [](void *index){
-      ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(*(int *)index));
-    },
-    .arg = &this->index,
-    .dispatch_method = ESP_TIMER_TASK,
-    .name = "PWM-Stop-Timer",
-  };
-  esp_timer_create(&stop_timer_args, &this->timer);
-
-  // API documentation for `<driver/ledc.h>`
-  // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html
-
-  const ledc_timer_config_t pwm_timer_args = {
-    .speed_mode = LEDC_HIGH_SPEED_MODE,
-    LEDC_TIMER_14_BIT,
-    .timer_num = TIMER_I(this->index),
-    2000,
-  };
-  ledc_timer_config(&pwm_timer_args);
-  const ledc_channel_config_t pwm_channel_args = {
-    .gpio_num = this->stepPin,
-    .speed_mode = LEDC_HIGH_SPEED_MODE,
-    .channel = CHANNEL_I(this->index),
-    .intr_type = LEDC_INTR_DISABLE,
-    .timer_sel = TIMER_I(this->index),
-    // Max duty for frequency of 2000Hz
-    .duty = 14,
-    // High point (0 -> at the beginning)
-    .hpoint = 0,
-  };
-  ledc_channel_config(&pwm_channel_args);
-
-  this->attached = true;
-
-  // NOTE: Needed?
-  ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
-  ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
-}
-
-// Connect the pin to the PWM signal
-void StepperMotor::attachPin() {
-  if (!this->attached) {
-    this->attached = true;
-    ledcAttachPin(this->stepPin, CHANNEL_I(this->index));
-  }
-}
-
-// Disconnect the pin from the PWM signal
-void StepperMotor::detachPin() {
-  if (this->attached) {
-    this->attached = false;
-    ledcDetachPin(this->stepPin);
-  }
 }
 
 // Do one step
 void StepperMotor::step() {
-  if (!this->attached) {
-    digitalWrite(this->stepPin, HIGH);
-    delayMicroseconds(2);
-    digitalWrite(this->stepPin, LOW);
-  }
+  digitalWrite(this->stepPin, HIGH);
+  delayMicroseconds(2);
+  digitalWrite(this->stepPin, LOW);
 }
 
 // Set the direction (counter-clockwise -> 0, clockwise -> 1)
@@ -121,36 +58,38 @@ void StepperMotor::setDirection(bool shorter) {
   digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
 }
 
-void StepperMotor::setVelocity(int velocity, bool shorter) {
-  if (this->attached) {
-    // Velocity in sps
-    this->velocity = velocity;
+void StepperMotor::setVelocity(int delay, bool shorter) {
+  // Velocity in sps
+  this->delay = delay;
+  this->setDirection(shorter);
+}
 
-    this->setDirection(shorter);
-    // Apply the velocity
-    ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index), (int)this->velocity); 
-
-    // The duty cycle does not have to be accurate to the point
-    // Delay of 2 microseconds = freq of 500000Hz
-    int dutyCycle = ceil((float)this->velocity/500000.0 * 16383.0);
-    // Use one if dutyCycle is too small
-    ledc_set_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index), dutyCycle == 0 ? 1 : dutyCycle);
-    ledc_update_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(this->index)); 
+void doSteps(void *arg) {
+  StepperMotor *stepper = (StepperMotor *)arg;
+  int stepsDone = 0;
+  while (stepsDone != stepper->_steps) {
+    stepper->step();
+    stepsDone += 1;
+    delayMicroseconds(stepper->delay);
   }
+  Serial.printf("Finished loop (%d)!\n", stepper->index);
 }
 
 // Make the string for a certain motor longer/shorter
-void StepperMotor::start(int delay) {
-  if (this->attached) {
-    esp_timer_start_once(this->timer, delay);
-    ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
-  }
-}
+void StepperMotor::start(int steps) {
+  this->_steps = steps;
+  char *name; sprintf(name, "Stepper Task %d", this->index);
 
-// Stop the motor
-void StepperMotor::stop() {
-  if (this->attached) {
-    ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-    ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-  }
+  // Create the task on the dedicated core
+  xTaskCreatePinnedToCore(
+    doSteps,
+    name,
+    10000,
+    this,
+    1,
+    this->task,
+    this->index
+  );
+
+  Serial.printf("Finished function (%d)!\n", this->index);
 }

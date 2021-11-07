@@ -27,9 +27,9 @@ void Plotter::joystick(bool draw) {
   pinMode(joyPins[0], INPUT);
   pinMode(joyPins[1], INPUT);
   pinMode(joyPins[2], INPUT_PULLUP);
-  // Detach pins
-  this->stepper1.detachPin();
-  this->stepper2.detachPin();
+  // // Detach pins
+  // this->stepper1.detachPin();
+  // this->stepper2.detachPin();
 
   long int lastMove = 0;
   long int maxdelay = 5000;
@@ -112,7 +112,7 @@ void Plotter::joystick(bool draw) {
   // Serial.printf("x: %f, y: %f\n", this->pos.x, this->pos.y);
   // Serial.printf("s1: %f, s2: %f\n", this->strings[0], this->strings[1]);
 
-  // Attach pins again
-  this->stepper1.attachPin();
-  this->stepper2.attachPin();
+  // // Attach pins again
+  // this->stepper1.attachPin();
+  // this->stepper2.attachPin();
 }
