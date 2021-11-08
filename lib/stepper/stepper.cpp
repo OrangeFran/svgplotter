@@ -73,23 +73,24 @@ void doSteps(void *arg) {
     delayMicroseconds(stepper->delay);
   }
   Serial.printf("Finished loop (%d)!\n", stepper->index);
+  vTaskDelete(stepper->task);
 }
 
 // Make the string for a certain motor longer/shorter
 void StepperMotor::start(int steps) {
   this->_steps = steps;
-  char *name; sprintf(name, "Stepper Task %d", this->index);
+  Serial.printf("Doing %d steps", this->_steps);
 
   // Create the task on the dedicated core
+  Serial.println("Creating task ...");
   xTaskCreatePinnedToCore(
     doSteps,
-    name,
+    "Steppertask",
     10000,
     this,
     1,
     this->task,
     this->index
   );
-
   Serial.printf("Finished function (%d)!\n", this->index);
 }

@@ -20,12 +20,12 @@ class StepperMotor {
   private:
     int dirPin;
     int stepPin;
-    xTaskHandle *task;
 
   public:
     int index; // Left motor -> 0, right motor -> 1
     int delay; // Delay in microseconds
     int _steps;
+    xTaskHandle *task;
 
     StepperMotor(int, int, int);
 
