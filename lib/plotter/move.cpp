@@ -67,13 +67,13 @@ int Plotter::moveTo(Point p) {
     int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
     int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
-    // Debug output?
-    Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
-    Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
-    Serial.printf("New position:  %f, %f\n", p.x, p.y);
-    Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
-    Serial.printf("Delay for S1: %d\n", delayTimeS1);
-    Serial.printf("Delay for S2: %d\n", delayTimeS2);
+    // // Debug output?
+    // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
+    // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+    // Serial.printf("New position:  %f, %f\n", p.x, p.y);
+    // Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
+    // Serial.printf("Delay for S1: %d\n", delayTimeS1);
+    // Serial.printf("Delay for S2: %d\n", delayTimeS2);
 
     // NOTE: Other approaches tried:
     //         - seperate threads for each motor
