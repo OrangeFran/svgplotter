@@ -106,17 +106,33 @@ int Plotter::moveTo(Point p) {
 }
 
 int Plotter::splitMove(Point p) {
-  // Split a distance 10 times 
   float x, y;
-  float increase[2] = { (p.x - this->pos.x) / 10.0, (p.y - this->pos.y) / 10.0 };
-  // Serial.printf("Increases: %f, %f\n", increase[0], increase[1]);
-  for (int i = 1; i <= 10; i++) {
-    x = this->pos.x + increase[0];
-    y = this->pos.y + increase[1];
-    // Serial.printf("Moving to %f, %f ...\n", x, y);
+  Point start = this->pos;
+  float diffs[2] = { p.x - start.x, p.y - start.y };
+  float length = sqrt(pow(diffs[0], 2) + pow(diffs[1], 2));
+
+  // Split a distance into 20mm pieces
+  float accuracy = length/20;
+  float increase = 1/accuracy;
+
+  Serial.printf("Diffs: %f, %f\n", diffs[0], diffs[1]);
+  Serial.printf("Length: %f\n", length);
+  Serial.printf("Accuracy: %f\n", accuracy);
+  Serial.printf("Increase: %f\n", increase);
+
+  for (float t = increase; t <= (float)1.0; t += increase) {
+    Serial.printf("T: %f", t);
+    Serial.printf("Pos: %f, %f", start.x, start.y);
+    x = start.x + t * diffs[0];
+    y = start.y + t * diffs[1];
+    Serial.printf("Moving to %f,%f\n", x, y);
     this->moveTo(Point(x, y));
     delay(100);
   }
+
+  // Move to end position
+  // if all increases did not exactly add up to 1.0
+  this->moveTo(p);
 
   return 0;
 }
