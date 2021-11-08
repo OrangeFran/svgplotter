@@ -36,7 +36,6 @@ class Plotter {
     int moveTo(Point);
 
     int splitMove(Point);
-    int bezierLinear(Point);
     int bezierQuadratic(Point, Point);
     int bezierCubic(Point, Point, Point);
 

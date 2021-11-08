@@ -92,7 +92,7 @@ void test_draw_svg_text() {
 void setup() {
   Serial.begin(9600);
   setMotorState(true);
-  delay(5000);
+  delay(2000);
 
   UNITY_BEGIN();
 
