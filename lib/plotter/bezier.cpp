@@ -22,7 +22,7 @@ int Plotter::bezierQuadratic(Point p1, Point p2) {
     x = pow((1.0 - t), 2) * this->pos.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
     y = pow((1.0 - t), 2) * this->pos.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
     this->moveTo(Point(x, y));
-    delay(100);
+    // delay(100);
   }
   return 0;
 }
@@ -42,7 +42,7 @@ int Plotter::bezierCubic(Point p1, Point p2, Point p3) {
     x = pow((1.0 - t), 3) * p0.x + 3.0 * t * pow((1.0 - t), 2) * p1.x + 3.0 * pow(t, 2) * (1.0 - t) * p2.x + pow(t, 3) * p3.x;
     y = pow((1.0 - t), 3) * p0.y + 3.0 * t * pow((1.0 - t), 2) * p1.y + 3.0 * pow(t, 2) * (1.0 - t) * p2.y + pow(t, 3) * p3.y;
     this->moveTo(Point(x, y));
-    delay(100);
+    // delay(100);
   }
   return 0;
 }
