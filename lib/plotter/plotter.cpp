@@ -10,6 +10,16 @@ const float boardHeight = 1185.0;   // mm
 // Delay of 500 µs in sps: 2000Hz
 const float baseVelocity = 1000.0;  // Hz
 
+// Auxiliary function to repeat char
+char *repeatString(char c, int num) {
+  static char res[255];
+  num = num < 255 ? num : 255;
+  for (int i = 0; i < num; i++) {
+    res[i] = c;
+  }
+  return res;
+}
+
 Point::Point(float x, float y) {
   this->x = x;
   this->y = y;
@@ -40,11 +50,15 @@ int Plotter::executeSVG(SVG svg) {
     std::pair<char, std::vector<float> > c = res[i];
     
     // Logging
+    // // Clear line with 100 whitespaces
+    // char whitespaces[110];
+    // strcat(whitespaces, "\r");
+    // strcat(whitespaces, repeatString(' ', 100));
+    // Serial.printf("%s", whitespaces);
     Serial.printf("--> %c ", c.first);
     for (int i = 0; i < c.second.size(); i += 1) {
       Serial.printf("%f ", c.second[i]);
     }
-    Serial.printf("\n");
 
     // Evaluate
     switch (c.first) {

@@ -94,11 +94,20 @@ void setup() {
   setMotorState(true);
   delay(2000);
 
+  // Make sure the pen is up
+  plotter.pen.penDown();
+  plotter.pen.penUp();
+
+  // Select position
+  plotter.joystick(false);
+
   UNITY_BEGIN();
 
   // RUN_TEST(test_draw_line_square);
   // RUN_TEST(test_draw_line_triangle);
   // RUN_TEST(test_draw_bezier_quadratic);
+  // plotter.pen.penUp();
+  // plotter.moveTo(Point(0, 0));
   // RUN_TEST(test_draw_bezier_cubic);
 
   // RUN_TEST(test_draw_svg_square);
@@ -106,11 +115,13 @@ void setup() {
   // RUN_TEST(test_draw_svg_curve);
   // RUN_TEST(test_draw_svg_text);
 
+  UNITY_END();
+
   // Return to start
   plotter.pen.penUp();
   plotter.moveTo(start);
+  setMotorSleep(true);
 
-  UNITY_END();
 }
 
 void loop() {}
