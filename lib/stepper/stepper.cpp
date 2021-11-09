@@ -7,8 +7,10 @@
 
 // 20 * π / (200 * 32)
 const float perstep = 0.009817477;
+
 // Global turned on state of motors
 bool motorState = false;
+bool motorSleep = false;
 
 // Pins to control state of motors
 const int enPin = 12;
@@ -20,6 +22,11 @@ const int penPin = 22;
 // { leftPin, rightPin }
 const int dirPins[2] = { 16, 18 };
 const int stepPins[2] = { 17, 19 };
+
+void setMotorSleep(bool on) {
+  digitalWrite(sleepPin, !on);
+  motorSleep = on;
+}
 
 // Turn the controlboard, motors on
 void setMotorState(bool on) {

@@ -4,6 +4,7 @@
 #define STEPPER_H
 
 void setMotorState(bool);
+void setMotorSleep(bool);
 
 extern const float perstep;
 // Global turned on state of motors

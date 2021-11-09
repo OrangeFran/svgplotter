@@ -57,7 +57,7 @@ void setup() {
   // Return to start and set motors to sleep
   plotter.pen.penUp();
   plotter.moveTo(start);
-
+  setMotorSleep(true);
 }
 
 void loop() {}
