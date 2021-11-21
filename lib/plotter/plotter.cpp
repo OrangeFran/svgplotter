@@ -66,7 +66,7 @@ int Plotter::executeSVG(SVG svg) {
       case 'm':
       case 'M':
          x1 = c.second[0] + start.x;
-         y1 = c.second[1] + start.y;
+         y1 = - c.second[1] + start.y;
         // Relative coordinates
         if (c.first == 'm') {
           x1 += this->pos.x - start.x;
@@ -80,7 +80,7 @@ int Plotter::executeSVG(SVG svg) {
       case 'l':
       case 'L':
          x1 = c.second[0] + start.x;
-         y1 = c.second[1] + start.y;
+         y1 = - c.second[1] + start.y;
         // Relative coordinates
         if (c.first == 'l') {
           x1 += this->pos.x - start.x;
@@ -109,7 +109,7 @@ int Plotter::executeSVG(SVG svg) {
       case 'v':
       case 'V':
          x1 = this->pos.x;
-         y1 = c.second[0] + start.y;
+         y1 = - c.second[0] + start.y;
         // Relative coordinates
         if (c.first == 'v') {
           y1 += this->pos.y - start.y;
@@ -131,9 +131,9 @@ int Plotter::executeSVG(SVG svg) {
       case 'q':
       case 'Q':
          x1 = c.second[0] + start.x;
-         y1 = c.second[1] + start.y;
+         y1 = - c.second[1] + start.y;
          x2 = c.second[2] + start.x;
-         y2 = c.second[3] + start.y;
+         y2 = - c.second[3] + start.y;
         // Relative coordinates
         if (c.first == 'q') {
           x1 += this->pos.x - start.x;
@@ -151,15 +151,19 @@ int Plotter::executeSVG(SVG svg) {
       case 'T':
         // `P_1 = 2 * P_0 - P_old_1`
          x1 = 2.0 * this->pos.x - res[i - 1].second[0] + start.x;
-         y1 = 2.0 * this->pos.y - res[i - 1].second[1] + start.y;
+         y1 = - 2.0 * this->pos.y - res[i - 1].second[1] + start.y; // TODO: Check if correct!!!
          x2 = c.second[0] + start.x;
-         y2 = c.second[1] + start.y;
+         y2 = - c.second[1] + start.y;
         // Relative coordinates
         if (c.first == 't') {
-          x1 += this->pos.x;
-          y1 += this->pos.y;
-          x2 += this->pos.x;
-          y2 += this->pos.y;
+          x1 += this->pos.x - start.x;
+          y1 += this->pos.y - start.y;
+          x2 += this->pos.x - start.x;
+          y2 += this->pos.y - start.y;
+          // x1 += this->pos.x;
+          // y1 += this->pos.y;
+          // x2 += this->pos.x;
+          // y2 += this->pos.y;
         }
         this->pen.penDown();
         this->bezierQuadratic(Point(x1, y1), Point(x2, y2));
@@ -169,11 +173,11 @@ int Plotter::executeSVG(SVG svg) {
       case 'c':
       case 'C':
          x1 = c.second[0] + start.x;
-         y1 = c.second[1] + start.y;
+         y1 = - c.second[1] + start.y;
          x2 = c.second[2] + start.x;
-         y2 = c.second[3] + start.y;
+         y2 = - c.second[3] + start.y;
          x3 = c.second[4] + start.x;
-         y3 = c.second[5] + start.y;
+         y3 = - c.second[5] + start.y;
         // Relative coordinates
         if (c.first == 'c') {
           x1 += this->pos.x - start.x;
@@ -193,11 +197,11 @@ int Plotter::executeSVG(SVG svg) {
       case 'S':
         // `P_1 = 2 * P_0 - P_old_2`
          x1 = 2.0 * this->pos.x - res[i - 1].second[2] + start.x;
-         y1 = 2.0 * this->pos.y - res[i - 1].second[3] + start.y;
+         y1 = - 2.0 * this->pos.y - res[i - 1].second[3] + start.y;
          x2 = c.second[0] + start.x;
-         y2 = c.second[1] + start.y;
+         y2 = - c.second[1] + start.y;
          x3 = c.second[2] + start.x;
-         y3 = c.second[3] + start.y;
+         y3 = - c.second[3] + start.y;
         // Relative coordinates
         if (c.first == 's') {
           x1 += this->pos.x - start.x;
