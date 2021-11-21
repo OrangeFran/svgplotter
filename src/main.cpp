@@ -30,12 +30,28 @@ void draw(std::string text) {
   // Signal to start moving with joystick
   plotter.pen.penDown();
   plotter.pen.penUp();
+
   // Serial.printf("Move to start ...");
   plotter.joystick(false);
+  // Save the position to drive back
+  Point origin = plotter.pos;
+  // Let user draw line
+  plotter.joystick(false);
+  // Calculate degree and length
+  float dx = plotter.pos.x - origin.x;
+  float dy = plotter.pos.y - origin.y;
+  float degree = atan(dy/dx);
+  // Add 2π if degree negative
+  if (degree < 0) {
+    degree += 2 * PI;
+  }
+  float length = sqrt(pow(dx, 2) + pow(dy, 2));
   // Serial.printf("Selected position: %f, %f\n", plotter.pos.x, plotter.pos.y);
   // Serial.println("Drawing svg ...");
 
   SVG svg = SVG(text);
+  svg.scale(length);
+  svg.rotate(degree);
   plotter.executeSVG(svg);
 
   // Serial.println("Drawing Finished!");

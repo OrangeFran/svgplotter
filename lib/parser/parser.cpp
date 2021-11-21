@@ -168,3 +168,13 @@ std::vector<std::pair<char, std::vector<float> > > SVG::followPath() {
 
   return actions;
 }
+
+// TODO: Implement
+void SVG::scale(float) {
+  return;
+}
+
+// TODO: Implement
+void SVG::rotate(float) {
+  return;
+}

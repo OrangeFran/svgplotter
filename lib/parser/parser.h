@@ -11,6 +11,8 @@ class SVG {
     // Constructor
     SVG(std::string);
     std::vector<std::pair<char, std::vector<float> > > followPath(void);
+    void scale(float);
+    void rotate(float);
 };
 
 #endif
