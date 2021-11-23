@@ -56,7 +56,7 @@ int Plotter::executeSVG(SVG svg) {
     // strcat(whitespaces, "\r");
     // strcat(whitespaces, repeatString(' ', 100));
     // Serial.printf("%s", whitespaces);
-    Serial.printf("--> %c ", c.first);
+    Serial.printf("--> %c\n", c.first);
     for (int i = 0; i < c.second.size(); i += 1) {
       Serial.printf("%f ", c.second[i]);
     }
