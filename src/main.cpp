@@ -33,21 +33,21 @@ void draw(std::string text) {
 
   // Serial.printf("Move to start ...");
   plotter.joystick(false);
-  // Save the position to drive back
-  Point origin = plotter.pos;
-  // Let user draw line
-  plotter.joystick(false);
-  // Calculate degree and length
-  float dx = plotter.pos.x - origin.x;
-  float dy = plotter.pos.y - origin.y;
-  float degree = atan(dy/dx);
-  // Add 2π if degree negative
-  if (degree < 0) {
-    degree += 2 * PI;
-  }
-  float length = sqrt(pow(dx, 2) + pow(dy, 2));
-  // Serial.printf("Selected position: %f, %f\n", plotter.pos.x, plotter.pos.y);
-  // Serial.println("Drawing svg ...");
+  // // Save the position to drive back
+  // Point origin = plotter.pos;
+  // // Let user draw line
+  // plotter.joystick(false);
+  // // Calculate degree and length
+  // float dx = plotter.pos.x - origin.x;
+  // float dy = plotter.pos.y - origin.y;
+  // float degree = atan(dy/dx);
+  // // Add 2π if degree negative
+  // if (degree < 0) {
+  //   degree += 2 * PI;
+  // }
+  // float length = sqrt(pow(dx, 2) + pow(dy, 2));
+  // // Serial.printf("Selected position: %f, %f\n", plotter.pos.x, plotter.pos.y);
+  // // Serial.println("Drawing svg ...");
 
   SVG svg = SVG(text);
   // svg.scale(length);
@@ -65,23 +65,32 @@ void setup() {
   Serial.begin(9600);
   setMotorState(true);
   delay(2000);
+
+  // Setup sd card (https://www.instructables.com/Select-SD-Interface-for-ESP32/)
+  // 13 (CS), 2 (MIS0), 14 (CLK), 15 (MOSI)
+  SPIClass sdSPI = SPIClass(HSPI);
+  sdSPI.begin(14, 2, 15, 13);
+  while (true) {
+    // SD card inserted
+    if (SD.begin(13, sdSPI)) {
+      // File needs to be named "draw.svg"
+      File file = SD.open("/draw.svg", FILE_READ);
+      if (!file) {
+        Serial.println("Failed to open 'draw.svg'!"); 
+      } else {
+        Serial.println("Reading 'draw.svg' ..."); 
+        std::string svgString;
+        while (file.available()) {
+          svgString.push_back(file.read());
+        }
+        Serial.println("Drawing 'draw.svg' ...");
+        draw(svgString);
+      }
+    }
+    // Wait 1 sec and try again
+    delay(1000);
+  }
 }
 
 void loop() {
-  // SD card inserted
-  if (SD.begin()) {
-    // File needs to be named "draw.svg"
-    File file = SD.open("/draw.svg", FILE_READ);
-    if (!file) {
-      Serial.println("Failed to open 'draw.svg'!"); 
-    } else {
-      std::string svgString;
-      while (file.available()) {
-        svgString.push_back(file.read());
-      }
-      draw(svgString);
-    }
-  }
-  // Wait 1 sec and try again
-  delay(1000);
 }
