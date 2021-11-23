@@ -33,6 +33,7 @@ class Plotter {
     StepperMotor stepper2; // Right
     Servo pen;
 
+    int makePoint();
     int moveTo(Point);
 
     int splitMove(Point);

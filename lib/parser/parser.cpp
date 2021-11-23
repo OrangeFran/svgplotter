@@ -124,22 +124,24 @@ SVG::SVG(std::string str) {
         break;
     }
   }
+
+  // Parse the path
+  this->_followPath();
 }
 
 // Docs: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
 // Parse path
-std::vector<std::pair<char, std::vector<float> > > SVG::followPath() {
+void SVG::_followPath() {
   int index = -1;
   std::string curr;
-  static std::vector<std::pair<char, std::vector<float> > > actions;
 
   // TODO: Convert to switch statement
   for (char c: this->path) {
     // Arguments are seperated by spaces
     if (c == ' ' || c == ',') {
       if (!curr.empty()) {
-        actions[index].second.push_back(strtof(curr.c_str(), NULL));
+        this->actions[index].second.push_back(strtof(curr.c_str(), NULL));
         curr = "";
       }
 
@@ -150,11 +152,11 @@ std::vector<std::pair<char, std::vector<float> > > SVG::followPath() {
     } else {
       // Add the number to the vector if there is one
       if (!curr.empty()) {
-        actions[index].second.push_back(strtof(curr.c_str(), NULL));
+        this->actions[index].second.push_back(strtof(curr.c_str(), NULL));
         curr = "";
       }
       index += 1;
-      actions.push_back(
+      this->actions.push_back(
         std::pair<char, std::vector<float> >(c, std::vector<float>(0))
       );
     }    
@@ -162,9 +164,35 @@ std::vector<std::pair<char, std::vector<float> > > SVG::followPath() {
 
   // If the string ended, check for analyzed args
   if (!curr.empty()) {
-    actions[index].second.push_back(strtof(curr.c_str(), NULL));
+    this->actions[index].second.push_back(strtof(curr.c_str(), NULL));
     curr = "";
   }
+}
 
-  return actions;
+void SVG::scale(float width) {
+  float factor = width/this->viewBox[2];
+  Serial.printf("factor: %f\n", factor);
+  // Update viewBox
+  for (int i = 0; i < 4; i++) {
+    this->viewBox[i] *= factor;
+  }
+  // Update the coordinates
+  for (int i = 0; i < this->actions.size(); i++) {
+    // Get the next element
+    for (int b = 0; b < this->actions[i].second.size(); b++) {
+      this->actions[i].second[b] *= factor;
+    }
+  }
+}
+
+// This has to be done when executing the svg
+void SVG::setRotation(float degree) {
+  // // Update the coordinates
+  // for (int i = 0; i < this->actions.size(); i++) {
+  //   // Get the next element
+  //   for (int b = 0; b < this->actions[i].second.size(); b++) {
+  //     this->actions[i].second[b] *= factor;
+  //   }
+  // }
+  this->rotation = degree;
 }

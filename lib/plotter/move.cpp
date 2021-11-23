@@ -1,6 +1,12 @@
 #include <Arduino.h>
 #include "plotter.h"
 
+int Plotter::makePoint() {
+  this->pen.penDown();
+  this->pen.penUp();
+  return 0;
+}
+
 // Move to a coordinate
 int Plotter::moveTo(Point p) {
   // Calculate the necessary movement

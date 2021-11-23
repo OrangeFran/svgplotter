@@ -36,7 +36,7 @@ void Plotter::joystick(bool draw) {
   long int stepdelay = maxdelay;
   int stepnum = 1;
 
-  static int steps[2] = { 0, 0 };
+  int steps[2] = { 0, 0 };
 
   while (true) {
     int a[2];
@@ -91,7 +91,7 @@ void Plotter::joystick(bool draw) {
     }
   }
 
-  // Serial.println("");
+  // Serial.println("...");
 
   // Serial.printf("s1: %f, %f\n", this->strings[0], (float)steps[0]);
   // Serial.printf("s2: %f, %f\n", this->strings[1], (float)steps[1]);

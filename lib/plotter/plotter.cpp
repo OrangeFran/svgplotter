@@ -43,7 +43,8 @@ int Plotter::executeSVG(SVG svg) {
 
   float x1, y1, x2, y2, x3, y3;
   // Retrieve the vector with all of the commands + coordinates
-  std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
+  // std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
+  std::vector<std::pair<char, std::vector<float> > > res = svg.actions;
 
   for (int i = 0; i < res.size(); i++) {
     // Get the next element
@@ -55,7 +56,7 @@ int Plotter::executeSVG(SVG svg) {
     // strcat(whitespaces, "\r");
     // strcat(whitespaces, repeatString(' ', 100));
     // Serial.printf("%s", whitespaces);
-    Serial.printf("--> %c ", c.first);
+    Serial.printf("--> %c\n", c.first);
     for (int i = 0; i < c.second.size(); i += 1) {
       Serial.printf("%f ", c.second[i]);
     }
