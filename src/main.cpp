@@ -50,8 +50,8 @@ void draw(std::string text) {
   // Serial.println("Drawing svg ...");
 
   SVG svg = SVG(text);
-  svg.scale(length);
-  svg.rotate(degree);
+  // svg.scale(length);
+  // svg.rotate(degree);
   plotter.executeSVG(svg);
 
   // Serial.println("Drawing Finished!");

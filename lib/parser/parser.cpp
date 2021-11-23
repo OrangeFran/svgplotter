@@ -126,13 +126,13 @@ SVG::SVG(std::string str) {
   }
 
   // Parse the path
-  this->followPath();
+  this->_followPath();
 }
 
 // Docs: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
 // Parse path
-void SVG::followPath() {
+void SVG::_followPath() {
   int index = -1;
   std::string curr;
 
@@ -169,8 +169,7 @@ void SVG::followPath() {
   }
 }
 
-// TODO: Implement
-void SVG::scale(width float) {
+void SVG::scale(float width) {
   float factor = width/this->viewBox[2];
   // Update viewBox
   for (int i = 0; i < 4; i++) {
@@ -185,8 +184,8 @@ void SVG::scale(width float) {
   }
 }
 
-// TODO: Implement
-void SVG::rotate(degree float) {
+// This has to be done when executing the svg
+void SVG::setRotation(float degree) {
   // // Update the coordinates
   // for (int i = 0; i < this->actions.size(); i++) {
   //   // Get the next element
@@ -194,5 +193,5 @@ void SVG::rotate(degree float) {
   //     this->actions[i].second[b] *= factor;
   //   }
   // }
-  return;
+  this->rotation = degree;
 }
