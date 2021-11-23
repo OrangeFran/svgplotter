@@ -171,6 +171,7 @@ void SVG::_followPath() {
 
 void SVG::scale(float width) {
   float factor = width/this->viewBox[2];
+  Serial.printf("factor: %f\n", factor);
   // Update viewBox
   for (int i = 0; i < 4; i++) {
     this->viewBox[i] *= factor;

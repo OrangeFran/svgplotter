@@ -28,29 +28,38 @@ void draw(std::string text) {
   setMotorSleep(false);
   // Make sure the pen is up
   // Signal to start moving with joystick
-  plotter.pen.penDown();
-  plotter.pen.penUp();
+  plotter.makePoint();
 
   // Serial.printf("Move to start ...");
   plotter.joystick(false);
-  // // Save the position to drive back
-  // Point origin = plotter.pos;
-  // // Let user draw line
-  // plotter.joystick(false);
-  // // Calculate degree and length
-  // float dx = plotter.pos.x - origin.x;
-  // float dy = plotter.pos.y - origin.y;
-  // float degree = atan(dy/dx);
-  // // Add 2π if degree negative
-  // if (degree < 0) {
-  //   degree += 2 * PI;
-  // }
-  // float length = sqrt(pow(dx, 2) + pow(dy, 2));
-  // // Serial.printf("Selected position: %f, %f\n", plotter.pos.x, plotter.pos.y);
-  // // Serial.println("Drawing svg ...");
+  plotter.makePoint();
+  // Save the position to drive back
+  Point origin = plotter.pos;
+  // Serial.printf("origin: (%f, %f)", origin.x, origin.y);
+  // Let user draw line
+  plotter.joystick(false);
+  plotter.makePoint();
+  // Save the position
+  Point end = plotter.pos;
+  // Serial.printf("end: (%f, %f)", end.x, end.y);
+  // Move back
+  plotter.moveTo(origin);
+
+  // Calculate degree and length
+  float dx = end.x - origin.x;
+  float dy = end.y - origin.y;
+  float degree = atan(dy/dx);
+  // Add 2π if degree negative
+  if (degree < 0) {
+    degree += 2 * PI;
+  }
+  float length = sqrt(pow(dx, 2) + pow(dy, 2));
+  // Serial.printf("dx: %f, dy: %f, degree: %f, length: %f\n", dx, dy, degree, length);
+  // Serial.printf("Selected position: %f, %f\n", plotter.pos.x, plotter.pos.y);
+  // Serial.println("Drawing svg ...");
 
   SVG svg = SVG(text);
-  // svg.scale(length);
+  svg.scale(length);
   // svg.rotate(degree);
   plotter.executeSVG(svg);
 
