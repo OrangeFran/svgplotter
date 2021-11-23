@@ -32,13 +32,11 @@ void draw(std::string text, bool scale) {
 
   SVG svg = SVG(text);
 
-  // Serial.printf("Move to start ...");
   plotter.joystick(false);
   if (scale) {
     plotter.makePoint();
     // Save the position to drive back
     Point origin = plotter.pos;
-    // Serial.printf("origin: (%f, %f)", origin.x, origin.y);
     // Let user draw line
     plotter.joystick(false);
     plotter.makePoint();
@@ -58,15 +56,11 @@ void draw(std::string text, bool scale) {
     }
     float length = sqrt(pow(dx, 2) + pow(dy, 2));
     svg.scale(length);
-    // Serial.printf("dx: %f, dy: %f, degree: %f, length: %f\n", dx, dy, degree, length);
-    // Serial.printf("Selected position: %f, %f\n", plotter.pos.x, plotter.pos.y);
-    // Serial.println("Drawing svg ...");
   }
 
   // svg.rotate(degree);
   plotter.executeSVG(svg);
 
-  // Serial.println("Drawing Finished!");
   // Return to start and set motors to sleep
   plotter.pen.penUp();
   plotter.moveTo(start);
@@ -85,18 +79,44 @@ void setup() {
   while (true) {
     // SD card inserted
     if (SD.begin(13, sdSPI)) {
-      // File needs to be named "draw.svg"
-      File file = SD.open("/draw.svg", FILE_READ);
-      if (!file) {
-        Serial.println("Failed to open 'draw.svg'!"); 
-      } else {
-        Serial.println("Reading 'draw.svg' ..."); 
-        std::string svgString;
-        while (file.available()) {
-          svgString.push_back(file.read());
+      // List files and find svgs
+      // Make sure the files have a ".svg" extension
+      File root = SD.open("/", FILE_READ);
+      while (true) {
+        File f = root.openNextFile();
+        // Checked all files
+        if (!f) {
+          break;
         }
-        Serial.println("Drawing 'draw.svg' ...");
-        draw(svgString, false);
+        const char *name = f.name();
+        // Retrieve the file extension
+        char *extension = (char *)malloc(sizeof(name));
+        Serial.printf("Finding extension of '%s'!", name);
+        for (int i = 0; i < strlen(name); i++) {
+          if (name[i] == '.') {
+            Serial.printf("Found point\n");
+            strcpy(extension, name + i);
+            break;
+          }
+        }
+        Serial.printf("'%s'\n", extension);
+
+        // Draw file
+        Serial.printf("%d\n", strcmp(extension, ".svg"));
+        if (strcmp(extension, ".svg") == 0) {
+          Serial.printf("Reading '%s' ...", name); 
+          std::string svgString;
+          while (f.available()) {
+            svgString.push_back(f.read());
+          }
+          Serial.printf("Drawing '%s' ...\n", name);
+          draw(svgString, false);
+        } else {
+          Serial.printf("Skipping '%s' ...\n", name);
+        }
+
+        f.close();
+        delay(1000);
       }
     }
     // Wait 1 sec and try again
