@@ -88,6 +88,9 @@ void test_parser_valid_svg_default() {
 // Run tests on native os
 // `pio test -e native -v`
 void setup() {
+  Serial.begin(9600);
+  delay(2000);
+
   // Setup sd card (https://www.instructables.com/Select-SD-Interface-for-ESP32/)
   // 13 (CS), 2 (MIS0), 14 (CLK), 15 (MOSI)
   SPIClass sdSPI = SPIClass(HSPI);
