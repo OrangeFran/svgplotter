@@ -7,7 +7,7 @@
 // parametric function with `t` -> move t from 0 to 1
 
 // `B(t) = (1 - t)^2 P_0 + 2t (1 - t) P_1 + t^2 P_2`
-int Plotter::bezierQuadratic(Point p1, Point p2) {
+void Plotter::bezierQuadratic(Point p1, Point p2) {
   float x, y;
   Point p0 = this->pos;
   // `accuracy` defines the amount of steps between
@@ -27,11 +27,10 @@ int Plotter::bezierQuadratic(Point p1, Point p2) {
     y = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
     this->moveTo(Point(x, y));
   }
-  return 0;
 }
 
 // `B(t) = (1 - t)^3 P_0 + 3t (1 - t)^2 P_1 + 3t^2 (1 - t) P_2 + t^3 P_3`
-int Plotter::bezierCubic(Point p1, Point p2, Point p3) {
+void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
   float x, y;
   Point p0 = this->pos;
   // `accuracy` defines the amount of steps between
@@ -50,5 +49,4 @@ int Plotter::bezierCubic(Point p1, Point p2, Point p3) {
     y = pow((1.0 - t), 3) * p0.y + 3.0 * t * pow((1.0 - t), 2) * p1.y + 3.0 * pow(t, 2) * (1.0 - t) * p2.y + pow(t, 3) * p3.y;
     this->moveTo(Point(x, y));
   }
-  return 0;
 }

@@ -28,19 +28,25 @@ class Point {
 class Plotter {
   public:
     Point pos;
-    float strings[2];
+    float strings[2]; // For faster access and fewer calculations
     StepperMotor stepper1; // Left
     StepperMotor stepper2; // Right
     Servo pen;
 
-    int makePoint();
-    int moveTo(Point);
+    // Make one point
+    void makePoint();
+    void moveTo(Point);
+    // Split one line into multiple segements
+    // and draw them individually
+    void splitMove(Point);
 
-    int splitMove(Point);
-    int bezierQuadratic(Point, Point);
-    int bezierCubic(Point, Point, Point);
+    void bezierQuadratic(Point, Point);
+    void bezierCubic(Point, Point, Point);
 
-    int executeSVG(SVG);
+    // Execute svg
+    void executeSVG(SVG);
+    
+    // Enable joystick control
     void joystick(bool);
 };
 

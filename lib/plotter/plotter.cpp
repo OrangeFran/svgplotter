@@ -37,25 +37,19 @@ float *Point::getStrings() {
 }
 
 // `<path>`: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
-int Plotter::executeSVG(SVG svg) {
+void Plotter::executeSVG(SVG svg) {
   // Store the start coordinates to return later
   Point start = this->pos;
 
-  float x1, y1, x2, y2, x3, y3;
   // Retrieve the vector with all of the commands + coordinates
-  // std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
   std::vector<std::pair<char, std::vector<float> > > res = svg.actions;
 
+  float x1, y1, x2, y2, x3, y3;
   for (int i = 0; i < res.size(); i++) {
     // Get the next element
     std::pair<char, std::vector<float> > c = res[i];
     
     // Logging
-    // // Clear line with 100 whitespaces
-    // char whitespaces[110];
-    // strcat(whitespaces, "\r");
-    // strcat(whitespaces, repeatString(' ', 100));
-    // Serial.printf("%s", whitespaces);
     Serial.printf("--> %c\n", c.first);
     for (int i = 0; i < c.second.size(); i += 1) {
       Serial.printf("%f ", c.second[i]);
@@ -89,7 +83,6 @@ int Plotter::executeSVG(SVG svg) {
         }
         this->pen.penDown();
         this->splitMove(Point(x1, y1));
-        // this->moveTo(Point(x1, y1));
         break;
 
       // Horizontal line
@@ -103,7 +96,6 @@ int Plotter::executeSVG(SVG svg) {
         }
         this->pen.penDown();
         this->splitMove(Point(x1, y1));
-        // this->moveTo(Point(x1, y1));
         break;
 
       // Vertical line
@@ -117,7 +109,6 @@ int Plotter::executeSVG(SVG svg) {
         }
         this->pen.penDown();
         this->splitMove(Point(x1, y1));
-        // this->moveTo(Point(x1, y1));
         break;
 
       // Close path
@@ -161,10 +152,6 @@ int Plotter::executeSVG(SVG svg) {
           y1 += this->pos.y - start.y;
           x2 += this->pos.x - start.x;
           y2 += this->pos.y - start.y;
-          // x1 += this->pos.x;
-          // y1 += this->pos.y;
-          // x2 += this->pos.x;
-          // y2 += this->pos.y;
         }
         this->pen.penDown();
         this->bezierQuadratic(Point(x1, y1), Point(x2, y2));
@@ -220,6 +207,4 @@ int Plotter::executeSVG(SVG svg) {
         break;
     }
   }
-
-  return 0;
 }
