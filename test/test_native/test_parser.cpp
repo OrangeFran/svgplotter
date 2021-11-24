@@ -49,9 +49,8 @@ void test_parser_valid_path_default() {
     "</svg>";
 
   SVG svg = SVG(s);
-  std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
-  TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[1]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, svg.actions[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, svg.actions[0].second[1]);
 }
 
 void test_parser_valid_path_float() {
@@ -62,9 +61,8 @@ void test_parser_valid_path_float() {
     "</svg>";
 
   SVG svg = SVG(s);
-  std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
-  TEST_ASSERT_EQUAL_FLOAT(100.5, res[0].second[0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.145, res[0].second[1]);
+  TEST_ASSERT_EQUAL_FLOAT(100.5, svg.actions[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.145, svg.actions[0].second[1]);
 }
 
 void test_parser_valid_path_no_space() {
@@ -75,9 +73,8 @@ void test_parser_valid_path_no_space() {
     "</svg>";
 
   SVG svg = SVG(s);
-  std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
-  TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[1]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, svg.actions[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, svg.actions[0].second[1]);
 }
 
 // Run tests on native os
