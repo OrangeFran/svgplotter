@@ -13,6 +13,7 @@ float *startStrings = start.getStrings();
 
 Servo pen = Servo(penPin);
 
+// Setup plotter
 Plotter plotter = {
   .pos = start, 
   .strings = {
@@ -31,8 +32,8 @@ void draw(std::string text, bool scale) {
   plotter.makePoint();
 
   SVG svg = SVG(text);
-
   plotter.joystick(false);
+
   if (scale) {
     plotter.makePoint();
     // Save the position to drive back
@@ -42,7 +43,6 @@ void draw(std::string text, bool scale) {
     plotter.makePoint();
     // Save the position
     Point end = plotter.pos;
-    // Serial.printf("end: (%f, %f)", end.x, end.y);
     // Move back
     plotter.moveTo(origin);
 
@@ -102,8 +102,8 @@ void setup() {
         Serial.printf("'%s'\n", extension);
 
         // Draw file
-        Serial.printf("%d\n", strcmp(extension, ".svg"));
-        if (strcmp(extension, ".svg") == 0) {
+        Serial.printf("%d\n", strncmp(extension, ".svg", 4));
+        if (strncmp(extension, ".svg", 4) == 0) {
           Serial.printf("Reading '%s' ...", name); 
           std::string svgString;
           while (f.available()) {
