@@ -23,40 +23,40 @@ Plotter plotter = {
   .pen =  pen,
 };
 
-void draw(std::string text, bool scale) {
+void draw(File file, bool scale) {
   // Wake motors up
   setMotorSleep(false);
   // Make sure the pen is up
   // Signal to start moving with joystick
   plotter.makePoint();
 
-  SVG svg = SVG(text);
+  SVG svg = SVG(file);
 
   plotter.joystick(false);
-  if (scale) {
-    plotter.makePoint();
-    // Save the position to drive back
-    Point origin = plotter.pos;
-    // Let user draw line
-    plotter.joystick(false);
-    plotter.makePoint();
-    // Save the position
-    Point end = plotter.pos;
-    // Serial.printf("end: (%f, %f)", end.x, end.y);
-    // Move back
-    plotter.moveTo(origin);
+  // if (scale) {
+    // plotter.makePoint();
+    // // Save the position to drive back
+    // Point origin = plotter.pos;
+    // // Let user draw line
+    // plotter.joystick(false);
+    // plotter.makePoint();
+    // // Save the position
+    // Point end = plotter.pos;
+    // // Serial.printf("end: (%f, %f)", end.x, end.y);
+    // // Move back
+    // plotter.moveTo(origin);
 
-    // Calculate degree and length
-    float dx = end.x - origin.x;
-    float dy = end.y - origin.y;
-    float degree = atan(dy/dx);
-    // Add 2π if degree negative
-    if (degree < 0) {
-      degree += 2 * PI;
-    }
-    float length = sqrt(pow(dx, 2) + pow(dy, 2));
-    svg.scale(length);
-  }
+    // // Calculate degree and length
+    // float dx = end.x - origin.x;
+    // float dy = end.y - origin.y;
+    // float degree = atan(dy/dx);
+    // // Add 2π if degree negative
+    // if (degree < 0) {
+      // degree += 2 * PI;
+    // }
+    // float length = sqrt(pow(dx, 2) + pow(dy, 2));
+    // svg.scale(length);
+  // }
 
   // svg.rotate(degree);
   plotter.executeSVG(svg);
@@ -124,5 +124,4 @@ void setup() {
   }
 }
 
-void loop() {
-}
+void loop() {}
