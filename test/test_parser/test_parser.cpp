@@ -1,106 +1,127 @@
-#include <Arduino.h>
-#include <SD.h>
-
 #include <vector>
 #include <string>
 #include <unity.h>
+#include <stdio.h>
+
 #include "parser.h"
 
-
-void test_parser_valid_svg_default() {
-  const char *s =
+void test_parserr_valid_find_path_default() {
+  const std::string s =
     // "<?xml version=\"1.0\" ?>\n"
     "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
       "<path color=\"blue\" d=\"M 100 100\">\n"
     "</svg>";
-  File f = SD.open("/test.svg", "rw");
-  f.printf("%s\n", s);
 
-  SVG svg = SVG(f);
-  float expectedViewBox[4] = { 0.0, 0.0, 500.0, 500.0 };
-  TEST_ASSERT_EQUAL_FLOAT_ARRAY(expectedViewBox, svg.viewBox, 4);
-  // TEST_ASSERT_EQUAL_FLOAT_ARRAY("M 100 100", svg.path.c_str());
+  CustomStream *sstream = new StringStream(s);
+
+  TEST_ASSERT_EQUAL_STRING("M 100 100", findPath(sstream).c_str());
 }
 
-// void test_parser_valid_svg_viewbox_float() {
-//   const std::string s =
-//     // "<?xml version=\"1.0\" ?>\n"
-//     "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500.98 500.73\">\n"
-//       "<path color=\"blue\" d=\"M 100 100\">\n"
-//     "</svg>";
-// 
-//   SVG svg = SVG(s);
-//   float expectedViewBox[4] = { 0.0, 0.0, 500.98, 500.73 };
-//   TEST_ASSERT_EQUAL_FLOAT_ARRAY(expectedViewBox, svg.viewBox, 4);
-// }
-// 
-// void test_parser_valid_svg_multiple_path() {
-//   const std::string s =
-//     // "<?xml version=\"1.0\" ?>\n"
-//     "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
-//       "<path color=\"blue\" d=\"M 100 100\">\n"
-//       "<path color=\"red\" d=\"L 100 100\">\n"
-//     "</svg>";
-// 
-//   SVG svg = SVG(s);
-//   TEST_ASSERT_EQUAL_STRING("M 100 100 L 100 100", svg.path.c_str());
-// }
-// 
-// void test_parser_valid_path_default() {
-//   const std::string s =
-//     // "<?xml version=\"1.0\" ?>\n"
-//     "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
-//       "<path color=\"blue\" d=\"M 100 100\">\n"
-//     "</svg>";
-// 
-//   SVG svg = SVG(s);
-//   std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
-//   TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[0]);
-//   TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[1]);
-// }
-// 
-// void test_parser_valid_path_float() {
-//   const std::string s =
-//     // "<?xml version=\"1.0\" ?>\n"
-//     "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
-//       "<path color=\"red\" d=\"L 100.5 100.145\">\n"
-//     "</svg>";
-// 
-//   SVG svg = SVG(s);
-//   std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
-//   TEST_ASSERT_EQUAL_FLOAT(100.5, res[0].second[0]);
-//   TEST_ASSERT_EQUAL_FLOAT(100.145, res[0].second[1]);
-// }
-// 
-// void test_parser_valid_path_no_space() {
-//   const std::string s =
-//     // "<?xml version=\"1.0\" ?>\n"
-//     "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
-//       "<path color=\"blue\" d=\"M100 200\">\n"
-//     "</svg>";
-// 
-//   SVG svg = SVG(s);
-//   std::vector<std::pair<char, std::vector<float> > > res = svg.followPath();
-//   TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[0]);
-//   TEST_ASSERT_EQUAL_FLOAT(100.0, res[0].second[1]);
-// }
+void test_parser_valid_svg_multiple_path() {
+  const std::string s =
+    // "<?xml version=\"1.0\" ?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+      "<path color=\"blue\" d=\"M 100 100\">\n"
+      "<path color=\"red\" d=\"L 200 200\">\n"
+    "</svg>";
+
+  CustomStream *sstream = new StringStream(s);
+
+  TEST_ASSERT_EQUAL_STRING("M 100 100", findPath(sstream).c_str());
+
+  printf("Hi\n");
+
+  TEST_ASSERT_EQUAL_STRING("L 200 200", findPath(sstream).c_str());
+}
+
+void test_parser_valid_svg_viewbox_float() {
+  const std::string s =
+    // "<?xml version=\"1.0\" ?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500.98 500.73\">\n"
+      "<path color=\"blue\" d=\"M 100 100\">\n"
+    "</svg>";
+
+  CustomStream *sstream = new StringStream(s);
+  SVG svg = SVG(sstream);
+  float expectedViewBox[4] = { 0.0, 0.0, 500.98, 500.73 };
+
+  TEST_ASSERT_EQUAL_FLOAT_ARRAY(expectedViewBox, svg.viewBox, 4);
+}
+
+void test_parser_valid_svg_default() {
+  const std::string s =
+    // "<?xml version=\"1.0\" ?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+      "<path color=\"blue\" d=\"M 100 100\">\n"
+    "</svg>";
+
+  CustomStream *sstream = new StringStream(s);
+  SVG svg = SVG(sstream);
+  float expectedViewBox[4] = { 0.0, 0.0, 500.0, 500.0 };
+  std::vector<std::pair<char, std::vector<float> > > path = svg.parseNextPath();
+
+  TEST_ASSERT_EQUAL_FLOAT_ARRAY(expectedViewBox, svg.viewBox, 4);
+  
+  TEST_ASSERT_EQUAL_INT((int)'M', (int)path[0].first);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[1]);
+}
+
+
+void test_parser_valid_path_default() {
+  const std::string s =
+    // "<?xml version=\"1.0\" ?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+      "<path color=\"blue\" d=\"M 100 100\">\n"
+    "</svg>";
+
+  CustomStream *sstream = new StringStream(s);
+  SVG svg = SVG(sstream);
+  std::vector<std::pair<char, std::vector<float> > > path = svg.parseNextPath();
+
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[1]);
+}
+
+void test_parser_valid_path_float() {
+  const std::string s =
+    // "<?xml version=\"1.0\" ?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+      "<path color=\"red\" d=\"L 100.5 100.145\">\n"
+    "</svg>";
+
+  CustomStream *sstream = new StringStream(s);
+  SVG svg = SVG(sstream);
+  std::vector<std::pair<char, std::vector<float> > > path = svg.parseNextPath();
+
+  TEST_ASSERT_EQUAL_FLOAT(100.5, path[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.145, path[0].second[1]);
+}
+
+void test_parser_valid_path_no_space() {
+  const std::string s =
+    // "<?xml version=\"1.0\" ?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+      "<path color=\"blue\" d=\"M100 200\">\n"
+    "</svg>";
+
+  CustomStream *sstream = new StringStream(s);
+  SVG svg = SVG(sstream);
+  std::vector<std::pair<char, std::vector<float> > > path = svg.parseNextPath();
+
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[1]);
+}
 
 // Run tests on native os
 // `pio test -e native -v`
-void setup() {
-  Serial.begin(9600);
-  delay(2000);
-
-  // Setup sd card (https://www.instructables.com/Select-SD-Interface-for-ESP32/)
-  // 13 (CS), 2 (MIS0), 14 (CLK), 15 (MOSI)
-  SPIClass sdSPI = SPIClass(HSPI);
-  sdSPI.begin(14, 2, 15, 13);
-
+int main() {
   UNITY_BEGIN();
+  RUN_TEST(test_parserr_valid_find_path_default);
   RUN_TEST(test_parser_valid_svg_default);
-  // RUN_TEST(test_parser_valid_svg_multiple_path);
-  // RUN_TEST(test_parser_valid_svg_viewbox_float);
-  // RUN_TEST(test_parser_valid_path_default);
+  RUN_TEST(test_parser_valid_svg_multiple_path);
+  RUN_TEST(test_parser_valid_svg_viewbox_float);
+  RUN_TEST(test_parser_valid_path_default);
   UNITY_END();
 }
 

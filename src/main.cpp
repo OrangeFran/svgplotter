@@ -2,8 +2,9 @@
 #include <SD.h>
 
 #include "stepper.h"
-#include "parser.h"
 #include "plotter.h"
+#include "parser.h"
+#include "file.h"
 
 StepperMotor stepper1 = StepperMotor(0, dirPins[0], stepPins[0]); // left
 StepperMotor stepper2 = StepperMotor(1, dirPins[1], stepPins[1]); // right
@@ -23,14 +24,14 @@ Plotter plotter = {
   .pen =  pen,
 };
 
-void draw(File file, bool scale) {
+void draw(CustomStream *stream, bool scale) {
   // Wake motors up
   setMotorSleep(false);
   // Make sure the pen is up
   // Signal to start moving with joystick
   plotter.makePoint();
 
-  SVG svg = SVG(file);
+  SVG svg = SVG(stream);
 
   plotter.joystick(false);
   // if (scale) {
@@ -110,7 +111,8 @@ void setup() {
             svgString.push_back(f.read());
           }
           Serial.printf("Drawing '%s' ...\n", name);
-          draw(svgString, false);
+          CustomStream *sstream = new StringStream(svgString);
+          draw(sstream, false);
         } else {
           Serial.printf("Skipping '%s' ...\n", name);
         }
