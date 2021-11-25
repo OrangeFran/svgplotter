@@ -68,6 +68,21 @@ void draw(CustomStream *stream, bool scale) {
   setMotorSleep(true);
 }
 
+// Extract file extension
+// Ex. 'draw.svg' -> '.svg'
+std::string findExtension(char *name) {
+  std::string extension;
+  Serial.printf("Finding extension of '%s'!", name);
+  for (int i = 0; i < strlen(name); i++) {
+    if (name[i] == '.') {
+      Serial.printf("Found point\n");
+      extension = name + i;
+      break;
+    }
+  }
+  return extension;
+}
+
 void setup() {
   Serial.begin(9600);
   setMotorState(true);
@@ -86,32 +101,16 @@ void setup() {
       while (true) {
         File f = root.openNextFile();
         // Checked all files
-        if (!f) {
-          break;
-        }
+        if (!f) { break; }
+        // Find extension
         const char *name = f.name();
-        // Retrieve the file extension
-        char *extension = (char *)malloc(sizeof(name));
-        Serial.printf("Finding extension of '%s'!", name);
-        for (int i = 0; i < strlen(name); i++) {
-          if (name[i] == '.') {
-            Serial.printf("Found point\n");
-            strcpy(extension, name + i);
-            break;
-          }
-        }
-        Serial.printf("'%s'\n", extension);
+        std::string extension = findExtension(name);
 
-        // Draw file
+        // Draw file if extension matches
         Serial.printf("%d\n", strcmp(extension, ".svg"));
         if (strcmp(extension, ".svg") == 0) {
-          Serial.printf("Reading '%s' ...", name); 
-          std::string svgString;
-          while (f.available()) {
-            svgString.push_back(f.read());
-          }
           Serial.printf("Drawing '%s' ...\n", name);
-          CustomStream *sstream = new StringStream(svgString);
+          CustomStream *sstream = new FileStream(f);
           draw(sstream, false);
         } else {
           Serial.printf("Skipping '%s' ...\n", name);

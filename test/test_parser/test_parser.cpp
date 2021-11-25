@@ -28,9 +28,6 @@ void test_parser_valid_svg_multiple_path() {
   CustomStream *sstream = new StringStream(s);
 
   TEST_ASSERT_EQUAL_STRING("M 100 100", findPath(sstream).c_str());
-
-  printf("Hi\n");
-
   TEST_ASSERT_EQUAL_STRING("L 200 200", findPath(sstream).c_str());
 }
 

@@ -3,8 +3,6 @@
 #include <string>
 #include <cstdlib>
 
-#include <stdio.h>
-
 #include "parser.h"
 
 StringStream::StringStream(std::string s) {
