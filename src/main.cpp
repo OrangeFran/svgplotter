@@ -88,20 +88,23 @@ void setup() {
   setMotorState(true);
   delay(2000);
 
-  // Setup sd card (https://www.instructables.com/Select-SD-Interface-for-ESP32/)
-  // 13 (CS), 2 (MIS0), 14 (CLK), 15 (MOSI)
+  // Setup sd card
+  // (https://www.instructables.com/Select-SD-Interface-for-ESP32/)
+  // Pins: 13 (CS), 2 (MIS0), 14 (CLK), 15 (MOSI)
   SPIClass sdSPI = SPIClass(HSPI);
   sdSPI.begin(14, 2, 15, 13);
+
   while (true) {
     // SD card inserted
-    if (SD.begin(13, sdSPI)) {
+    if (SD.begin(13, spi)) {
       // List files and find svgs
       // Make sure the files have a ".svg" extension
       File root = SD.open("/", FILE_READ);
       while (true) {
         File f = root.openNextFile();
-        // Checked all files
+        // Stop if all files were checked
         if (!f) { break; }
+
         // Find extension
         const char *name = f.name();
         std::string extension = findExtension(name);
@@ -115,9 +118,8 @@ void setup() {
         } else {
           Serial.printf("Skipping '%s' ...\n", name);
         }
-
+        // Close the file and try the next
         f.close();
-        delay(1000);
       }
     }
     // Wait 1 sec and try again
