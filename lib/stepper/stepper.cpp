@@ -76,7 +76,10 @@ StepperMotor::StepperMotor(
         esp_timer_start_once(stepper->stop_timer, delay);
         ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
       }
-      if (stepper->current_velocity < (stepper->target_velocity - stepper->accel)) {
+      // if (stepper->current_velocity < (stepper->target_velocity - stepper->accel)) {
+      //   esp_timer_stop(stepper->accel_timer);
+      // }
+      if (stepper->current_velocity == stepper->target_velocity) {
         esp_timer_stop(stepper->accel_timer);
       }
     },
@@ -132,9 +135,9 @@ int StepperMotor::setAcceleration(int start_velocity, int target_velocity, bool 
   //  counter-clockwise -> 0, clockwise -> 1
   digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
 
-  // The motor is going to accelerate through ten levels
   this->start_velocity = start_velocity;
   this->target_velocity = target_velocity;
+  // The motor is going to accelerate through ten levels
   this->accel = (target_velocity - start_velocity)/10;
   return 0;
 }
