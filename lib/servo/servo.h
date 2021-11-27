@@ -3,12 +3,13 @@
 
 extern const int servoPin;
 
+// Servo class to "control" the pen
 class Servo {
-  public:
+  private:
     int pin;
     bool down;
 
-    // Constructor
+  public:
     Servo(int);
     int penUp();
     int penDown();

@@ -62,8 +62,8 @@ void Plotter::joystick(bool draw) {
       delayMicroseconds(stepdelay);
       lastMove=millis();
     }
-    this->stepper1.setDirection(m0 < 0);
-    this->stepper2.setDirection(m1 < 0);
+    this->stepper1.applyDirection(m0 < 0);
+    this->stepper2.applyDirection(m1 < 0);
     // setDirs(m0<0 ? 1:0, m1<0 ? 1:0);
   
     if (m0!=0) {

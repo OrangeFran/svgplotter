@@ -21,8 +21,15 @@ class StepperMotor {
   private:
     int dirPin;
     int stepPin;
-    esp_timer_handle_t timer;
+    esp_timer_handle_t accel_timer;
+    esp_timer_handle_t stop_timer;
     bool attached;
+
+    int stepsToDo;
+    float target_velocity;
+    // One tenth of the target velocity
+    // -> velocity gets increased 10 times
+    float accel; 
 
   public:
     int index; // Left motor -> 0, right motor -> 1
@@ -34,11 +41,12 @@ class StepperMotor {
     void detachPin(void);
 
     void step(void);
-    void setDirection(bool);
-    void setVelocity(int, bool);
+
+    void applyDirection(bool);
+    void applyVelocity(int);
+
     // PWM signal controls
-    void start(int);
-    void stop(void);
+    void start(int, int);
 };
 
 #endif

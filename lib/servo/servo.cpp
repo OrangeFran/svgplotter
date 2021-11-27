@@ -3,20 +3,23 @@
 
 const int servoPin = 22;
 
+const int ledcDownFreq = (int)(1.0/20.0 * 256.0);
+const int ledcUpFreq = (int)(1.5/20.0 * 256.0);
+
 Servo::Servo(int pin) {
   this->pin = pin;
   this->down = false;
   
-  // Setup pwm signal
+  // Set up a simple pwm signal
   pinMode(this->pin, OUTPUT);
   ledcSetup(8, 50, 8);
   ledcAttachPin(this->pin, 8);
 }
 
 int Servo::penDown() {
-  if (!down) {
+  if (!this->down) {
     this->down = true;
-    ledcWrite(8, (int)(1.0/20.0 * 256.0));
+    ledcWrite(8, ledcDownFreq);
     delay(200);
     ledcWrite(8, 0);
     delay(200);
@@ -25,9 +28,9 @@ int Servo::penDown() {
 }
 
 int Servo::penUp() {
-  if (down) {
+  if (this->down) {
     this->down = false;
-    ledcWrite(8, (int)(1.5/20.0 * 256.0));
+    ledcWrite(8, ledcUpFreq);
     delay(200);
     ledcWrite(8, 0);
     delay(200);
@@ -36,7 +39,7 @@ int Servo::penUp() {
 }
 
 int Servo::toggle() {
-  if (down) {
+  if (this->down) {
     this->penUp();
   } else {
     this->penDown();

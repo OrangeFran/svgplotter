@@ -56,6 +56,37 @@ StepperMotor::StepperMotor(
   // API documentation for `esp_timer`
   // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/esp_timer.html
 
+  // Timer with callback to accelerate the pwm signal frequency
+  const esp_timer_create_args_t accel_timer_args = {
+    // Function to stop the PWM signal
+    .callback = [](void *_stepper){
+      StepperMotor *stepper = (StepperMotor *)_stepper;
+
+      // Increase velocity
+      ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
+      ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
+      stepper->applyVelocity(stepper->velocity + stepper->accel);
+
+      // Start a stop timer if all the steps will be executed
+      // before the next accel timer is called
+      if (stepper->stepsToDo < (stepper->velocity * 0.2) || stepper->velocity == stepper->target_velocity) {
+        int delay = (float)(stepper->stepsToDo)/(float)(stepper->velocity) * 1000000.0;
+        esp_timer_start_once(stepper->stop_timer, delay);
+        esp_timer_stop(stepper->accel_timer);
+      }
+
+      // Calculate steps done
+      stepper->stepsToDo -= stepper->velocity * 0.2;
+
+      // Start the PWM signal again
+      ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
+    },
+    .arg = this,
+    .dispatch_method = ESP_TIMER_TASK,
+    .name = "Accel-Timer",
+  };
+  esp_timer_create(&accel_timer_args, &this->accel_timer);
+
   // Timer with callback to stop the pwm signal
   const esp_timer_create_args_t stop_timer_args = {
     // Function to stop the PWM signal
@@ -64,9 +95,9 @@ StepperMotor::StepperMotor(
     },
     .arg = &this->index,
     .dispatch_method = ESP_TIMER_TASK,
-    .name = "PWM-Stop-Timer",
+    .name = "Stop-Timer",
   };
-  esp_timer_create(&stop_timer_args, &this->timer);
+  esp_timer_create(&stop_timer_args, &this->stop_timer);
 
   // API documentation for `<driver/ledc.h>`
   // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html
@@ -124,16 +155,15 @@ void StepperMotor::step() {
 }
 
 // Set the direction (counter-clockwise -> 0, clockwise -> 1)
-void StepperMotor::setDirection(bool shorter) {
+void StepperMotor::applyDirection(bool shorter) {
   digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
 }
 
-void StepperMotor::setVelocity(int velocity, bool shorter) {
+void StepperMotor::applyVelocity(int velocity) {
   if (this->attached) {
     // Velocity in sps
     this->velocity = velocity;
 
-    this->setDirection(shorter);
     // Apply the velocity
     ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index), (int)this->velocity); 
 
@@ -146,18 +176,30 @@ void StepperMotor::setVelocity(int velocity, bool shorter) {
   }
 }
 
+// void StepperMotor::setTargetVelocity(int target_velocity) {
+//   this->target_velocity = target_velocity;
+//   this->accel = this->target_velocity/10;
+// }
+
 // Make the string for a certain motor longer/shorter
-void StepperMotor::start(int delay) {
+void StepperMotor::start(int target_velocity, int steps) {
   if (this->attached) {
-    esp_timer_start_once(this->timer, delay);
-    ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
+      this->velocity = 0;
+      this->stepsToDo = steps;
+      this->target_velocity = target_velocity;
+      this->accel = this->target_velocity/10;
+
+      // Start the accel timer
+      // The accel timer will automatically start
+      // the stop timer after fully accelerating
+      esp_timer_start_periodic(this->accel_timer, 0.2);
   }
 }
 
-// Stop the motor
-void StepperMotor::stop() {
-  if (this->attached) {
-    ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-    ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-  }
-}
+// // Stop the motor
+// void StepperMotor::stop() {
+//   if (this->attached) {
+//     ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
+//     ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
+//   }
+// }
