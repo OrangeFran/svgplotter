@@ -123,7 +123,10 @@ void Plotter::moveTo(Point p) {
 void Plotter::splitMove(Point p) {
   float x, y;
   Point start = this->pos;
+
+  // { dx, dy }
   float diffs[2] = { p.x - start.x, p.y - start.y };
+  // The total length of the distance 
   float length = sqrt(pow(diffs[0], 2) + pow(diffs[1], 2));
 
   // Split a distance into 20mm pieces
@@ -138,5 +141,6 @@ void Plotter::splitMove(Point p) {
 
   // Move to end position
   // if all increases did not exactly add up to 1.0
+  // NOTE: Needed?
   this->moveTo(p);
 }

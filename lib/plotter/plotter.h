@@ -18,8 +18,8 @@ class Point {
     float x;
     float y;
 
-    // Constructor
     Point(float, float);
+
     // Calculates the string length for the point
     float *getStrings(void);
 };
@@ -36,16 +36,29 @@ class Plotter {
 
     // Make one point
     void makePoint();
+
+    // Move directly to a point
+    // Results in a curved line (workaround: `splitMove`)
+    // NOTE: Fix curve line
     void moveTo(Point);
+
     // Split one line into multiple segements
     // and draw them individually
     void splitMove(Point);
+
+    // Draw a quadratic and a cubic bezier curve
+    // The first point will be the current position of the plotter
     void bezierQuadratic(Point, Point);
     void bezierCubic(Point, Point, Point);
 
     // Execute svg
     void executeSVG(SVG);
-    // Enable joystick control
+
+    // Control plotter by moving the joystick
+    // `bool` specifies
+    // -> if joystick push down
+    // -> or stops the control or moves the pen
+    // Plotter position updates before the function returns
     void joystick(bool);
 };
 
