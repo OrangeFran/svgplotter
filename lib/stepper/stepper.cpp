@@ -39,7 +39,7 @@ void setMotorState(bool on) {
   motorState = on;
 }
 
-// Constructor
+// Assign values, set up timer and PWM channel + timer
 StepperMotor::StepperMotor(
   int index, int dirPin, int stepPin
 ) {
@@ -67,18 +67,22 @@ StepperMotor::StepperMotor(
       ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
       stepper->applyVelocity(stepper->velocity + stepper->accel);
 
-      // Start a stop timer if all the steps will be executed
-      // before the next accel timer is called
+      // Start a stop timer if
+      // -> all the steps will be executed before the next accel timer is called
+      // -> or the plotter is fully accelerated
       if (stepper->stepsToDo < (stepper->velocity * 0.2) || stepper->velocity == stepper->target_velocity) {
+        // Calculate the remaining time
         int delay = (float)(stepper->stepsToDo)/(float)(stepper->velocity) * 1000000.0;
-        esp_timer_start_once(stepper->stop_timer, delay);
+        stepper->stepsToDo = 0;
+        // Stop the acceleration timer and start the stop timer
         esp_timer_stop(stepper->accel_timer);
+        esp_timer_start_once(stepper->stop_timer, delay);
+      } else {
+        // Else calculate steps done until next callback 
+        stepper->stepsToDo -= stepper->velocity * 0.2;
       }
 
-      // Calculate steps done
-      stepper->stepsToDo -= stepper->velocity * 0.2;
-
-      // Start the PWM signal again
+      // Resume the PWM signal
       ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
     },
     .arg = this,
@@ -117,7 +121,7 @@ StepperMotor::StepperMotor(
     .timer_sel = TIMER_I(this->index),
     // Max duty for frequency of 2000Hz
     .duty = 14,
-    // High point (0 -> at the beginning)
+    // High point (0 = at the beginning)
     .hpoint = 0,
   };
   ledc_channel_config(&pwm_channel_args);
@@ -129,7 +133,7 @@ StepperMotor::StepperMotor(
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index));
 }
 
-// Connect the pin to the PWM signal
+// Connect the step pin to the PWM channel
 void StepperMotor::attachPin() {
   if (!this->attached) {
     this->attached = true;
@@ -137,7 +141,7 @@ void StepperMotor::attachPin() {
   }
 }
 
-// Disconnect the pin from the PWM signal
+// Disconnect the step pin from the PWM channel 
 void StepperMotor::detachPin() {
   if (this->attached) {
     this->attached = false;
@@ -146,6 +150,7 @@ void StepperMotor::detachPin() {
 }
 
 // Do one step
+// Only works if the step pin is detached from the PWM channel
 void StepperMotor::step() {
   if (!this->attached) {
     digitalWrite(this->stepPin, HIGH);
