@@ -15,8 +15,14 @@ extern const int penPin;
 extern const int dirPins[2];
 extern const int stepPins[2];
 
+typedef struct accelParameters {
+  float accel;
+  float target_velocity;
+  float stepsToDo;
+} AccelParameters;
+
 class StepperMotor {
-  private:
+  public:
     int dirPin;
     int stepPin;
     esp_timer_handle_t accel_timer;
@@ -27,11 +33,11 @@ class StepperMotor {
 
     int stepsToDo;
     float target_velocity;
-    float accel; 
 
-  public:
+  // public:
     int index; // Left motor -> 0, right motor -> 1
     float velocity; // Steps per second (= Hz)
+    float accel; 
 
     StepperMotor(int, int, int);
 
@@ -41,10 +47,11 @@ class StepperMotor {
     void step(void);
 
     void applyDirection(bool);
-    void applyVelocity(int);
+    // void applyVelocity(float);
+    void increaseVelocity(void);
 
     // PWM signal controls
-    void start(int, int);
+    void start(float, int);
 };
 
 #endif

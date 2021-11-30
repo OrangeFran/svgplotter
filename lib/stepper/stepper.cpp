@@ -61,16 +61,23 @@ StepperMotor::StepperMotor(
     // Function to stop the PWM signal
     .callback = [](void *_stepper){
       StepperMotor *stepper = (StepperMotor *)_stepper;
+      Serial.printf("Accelerating %d ...", stepper->index);
 
       // Increase velocity
       ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
       ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
-      stepper->applyVelocity(stepper->velocity + stepper->accel);
+      Serial.println("Applying velocity");
+      // Serial.printf("velocity: %f\n", stepper->velocity);
+      // Serial.printf("accel: %f\n", stepper->accel);
+      // float new_velocity = stepper->velocity + stepper->accel;
+      stepper->increaseVelocity();
+      Serial.println("Applied velocity");
 
       // Start a stop timer if
       // -> all the steps will be executed before the next accel timer is called
       // -> or the plotter is fully accelerated
       if (stepper->stepsToDo < (stepper->velocity * 0.2) || stepper->velocity == stepper->target_velocity) {
+        Serial.println("Coming to an end: calculating delay");
         // Calculate the remaining time
         int delay = (float)(stepper->stepsToDo)/(float)(stepper->velocity) * 1000000.0;
         stepper->stepsToDo = 0;
@@ -79,7 +86,9 @@ StepperMotor::StepperMotor(
         esp_timer_start_once(stepper->stop_timer, delay);
       } else {
         // Else calculate steps done until next callback 
+        Serial.println("Calculate steps done");
         stepper->stepsToDo -= stepper->velocity * 0.2;
+        Serial.printf("Steps to do: %d", stepper->stepsToDo);
       }
 
       // Resume the PWM signal
@@ -164,10 +173,14 @@ void StepperMotor::applyDirection(bool shorter) {
   digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
 }
 
-void StepperMotor::applyVelocity(int velocity) {
+void StepperMotor::increaseVelocity() {
   if (this->attached) {
     // Velocity in sps
-    this->velocity = velocity;
+    Serial.printf("accel: %f\n", this->accel);
+    this->velocity += this->accel;
+    Serial.printf("Going to %f\n", this->velocity);
+    Serial.printf("Index %d\n", this->index);
+    Serial.printf("Steps to do: %d\n", this->stepsToDo);
 
     // Apply the velocity
     ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(this->index), (int)this->velocity); 
@@ -187,17 +200,21 @@ void StepperMotor::applyVelocity(int velocity) {
 // }
 
 // Make the string for a certain motor longer/shorter
-void StepperMotor::start(int target_velocity, int steps) {
+void StepperMotor::start(float target_velocity, int steps) {
   if (this->attached) {
-      this->velocity = 0;
-      this->stepsToDo = steps;
-      this->target_velocity = target_velocity;
-      this->accel = this->target_velocity/10;
+    this->velocity = 10;
+    this->stepsToDo = steps;
+    this->target_velocity = target_velocity;
+    // this->accel = this->target_velocity/10.0;
 
-      // Start the accel timer
-      // The accel timer will automatically start
-      // the stop timer after fully accelerating
-      esp_timer_start_periodic(this->accel_timer, 0.2);
+    Serial.printf("accel: %f\n", this->accel);
+    Serial.printf("stepstodo: %d\n", this->stepsToDo);
+
+    // Start the accel timer
+    // The accel timer will automatically start
+    // the stop timer after fully accelerating
+    Serial.println("Start acceleration timer ...");
+    esp_timer_start_periodic(this->accel_timer, 0.2);
   }
 }
 
