@@ -70,8 +70,8 @@ void draw(CustomStream *stream, bool scale) {
 
 // Extract file extension
 // Ex. 'draw.svg' -> '.svg'
-std::string findExtension(char *name) {
-  std::string extension;
+const char *findExtension(const char *name) {
+  static const char *extension = (char *)malloc(sizeof(name));
   Serial.printf("Finding extension of '%s'!", name);
   for (int i = 0; i < strlen(name); i++) {
     if (name[i] == '.') {
@@ -96,22 +96,29 @@ void setup() {
 
   while (true) {
     // SD card inserted
-    if (SD.begin(13, spi)) {
+    if (SD.begin(13, sdSPI)) {
       // List files and find svgs
       // Make sure the files have a ".svg" extension
       File root = SD.open("/", FILE_READ);
       while (true) {
         File f = root.openNextFile();
         // Stop if all files were checked
-        if (!f) { break; }
+        if (!f) { 
+          Serial.println("All available files have been drawn!");
+          break;
+        }
 
-        // Find extension
         const char *name = f.name();
-        std::string extension = findExtension(name);
+        // Skip hidden files
+        if (strncmp(name, "/.", 2) == 0) {
+          Serial.printf("Skipping hidden file '%s' ...\n", name);
+          continue;
+        }
+        // Find extension
+        const char *extension = findExtension(name);
 
         // Draw file if extension matches
-        Serial.printf("%d\n", strcmp(extension, ".svg"));
-        if (strcmp(extension, ".svg") == 0) {
+        if (strncmp(extension, ".svg", 4) == 0) {
           Serial.printf("Drawing '%s' ...\n", name);
           CustomStream *sstream = new FileStream(f);
           draw(sstream, false);

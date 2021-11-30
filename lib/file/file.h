@@ -9,6 +9,7 @@ class FileStream: public CustomStream {
     File file;
 
   public:
+    FileStream(File);
     char read();
     bool available();
 };
