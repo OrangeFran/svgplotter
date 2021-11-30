@@ -107,7 +107,7 @@ void test_parser_valid_parse_path_no_space() {
   std::vector<std::pair<char, std::vector<float> > > path = svg.parseNextPath();
 
   TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[1]);
+  TEST_ASSERT_EQUAL_FLOAT(200.0, path[0].second[1]);
 }
 
 // Run tests on native os

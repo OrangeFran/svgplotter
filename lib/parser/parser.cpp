@@ -236,6 +236,11 @@ std::vector<std::pair<char, std::vector<float> > > followPath(std::string path) 
 
   static std::vector<std::pair<char, std::vector<float> > > actions;
 
+  // Clear the vector
+  std::vector<std::pair<char, std::vector<float> > > empty;
+  actions = empty;
+
+
   for (char c: path) {
     // Arguments are seperated by spaces
     if (c == ' ' || c == ',') {

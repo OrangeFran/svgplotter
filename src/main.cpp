@@ -72,10 +72,8 @@ void draw(CustomStream *stream, bool scale) {
 // Ex. 'draw.svg' -> '.svg'
 const char *findExtension(const char *name) {
   static const char *extension = (char *)malloc(sizeof(name));
-  Serial.printf("Finding extension of '%s'!", name);
   for (int i = 0; i < strlen(name); i++) {
     if (name[i] == '.') {
-      Serial.printf("Found point\n");
       extension = name + i;
       break;
     }
@@ -111,7 +109,7 @@ void setup() {
         const char *name = f.name();
         // Skip hidden files
         if (strncmp(name, "/.", 2) == 0) {
-          Serial.printf("Skipping hidden file '%s' ...\n", name);
+          Serial.printf("Skipping '%s' (hidden file) ...\n", name);
           continue;
         }
         // Find extension
@@ -122,8 +120,9 @@ void setup() {
           Serial.printf("Drawing '%s' ...\n", name);
           CustomStream *sstream = new FileStream(f);
           draw(sstream, false);
+          Serial.printf("'%s' drawn!\n", name);
         } else {
-          Serial.printf("Skipping '%s' ...\n", name);
+          Serial.printf("Skipping '%s' (no '.svg' extension) ...\n", name);
         }
         // Close the file and try the next
         f.close();
