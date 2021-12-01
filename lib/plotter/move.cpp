@@ -90,15 +90,11 @@ void Plotter::moveTo(Point p) {
     //           -> failed, because `vTaskDelay` is only able to
     //              delay with a precision of 1ms 
 
-    Serial.println("Applying direction ...");
-
     this->stepper1.applyDirection(distanceS1 < 0);
     this->stepper2.applyDirection(distanceS2 < 0);
 
-    Serial.println("Starting 0 ...");
     this->stepper1.motor->start((float)velocityS1, stepsS1);
     // Serial.printf("Acceleration: %f", this->stepper1.motor->accel);
-    Serial.println("Starting 1 ...");
     this->stepper2.motor->start((float)velocityS2, stepsS2);
 
     // this->stepper1.start(delayTimeS1);
@@ -108,10 +104,10 @@ void Plotter::moveTo(Point p) {
   // Wait for the timers to trigger a stop
   int next_alarm;
   while (true) {
-    Serial.printf("Next alarm: %d\n", esp_timer_get_next_alarm());
-    Serial.printf("Get time: %d\n", esp_timer_get_time());
+    // Serial.printf("Next alarm: %d\n", esp_timer_get_next_alarm());
+    // Serial.printf("Get time: %d\n", esp_timer_get_time());
     next_alarm = esp_timer_get_next_alarm() - esp_timer_get_time();
-    Serial.printf("Calculated delay: %d\n", next_alarm);
+    // Serial.printf("Calculated delay: %d\n", next_alarm);
     if (next_alarm <= 0) {
       Serial.println("------ Stopped waiting!");
       break;
@@ -120,24 +116,19 @@ void Plotter::moveTo(Point p) {
   }
 
   // Cautionary waiting
-  Serial.println("Cautionary waiting ...");
   delay(100);
 
   // Update the position
-  Serial.println("Updating position ...");
   this->pos = p;
   this->strings[0] = newPos[0];
   this->strings[1] = newPos[1];
 
-  Serial.println("Returning ...");
   return;
 }
 
 void Plotter::splitMove(Point p) {
   float x, y;
   Point start = this->pos;
-
-  Serial.println("Doing split move");
 
   // { dx, dy }
   float diffs[2] = { p.x - start.x, p.y - start.y };

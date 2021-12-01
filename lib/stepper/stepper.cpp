@@ -92,8 +92,6 @@ StepperMotor::StepperMotor(
     // Function to stop the PWM signal
     .callback = [](void *_stepper){
       Motor *stepper = (Motor *)_stepper;
-      Serial.printf("Accelerating %d ...", stepper->index);
-
       // Increase velocity
       ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
       ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(stepper->index));
@@ -102,7 +100,7 @@ StepperMotor::StepperMotor(
       // float new_velocity = stepper->velocity + stepper->accel;
       stepper->increaseVelocity();
 
-      Serial.printf("Velicty: %f\n", stepper->velocity);
+      Serial.printf("Velocity (%d): %f\n", stepper->index, stepper->velocity);
 
       // Start a stop timer if
       // -> all the steps will be executed before the next accel timer is called
