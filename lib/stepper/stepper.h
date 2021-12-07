@@ -18,21 +18,17 @@ extern const int stepPins[2];
 // A smaller class to StepperMotor
 // This is needed to pass values and functions
 // to the accel_timer callback
-class Motor {
-  public:
-    esp_timer_handle_t accel_timer;
-    esp_timer_handle_t stop_timer;
-
-    int stepsToDo;
-    float target_velocity;
-
-    int index; // Left motor -> 0, right motor -> 1
-    float velocity; // Steps per second (= Hz)
-    float accel; 
-
-    Motor(int);
-    void increaseVelocity(void);
-};
+typedef struct Motor {
+  int index; // Left motor -> 0, right motor -> 1
+  float velocity; // Steps per second (= Hz)
+  esp_timer_handle_t accel_timer;
+  esp_timer_handle_t stop_timer;
+  int stepsToDo;
+  float target_velocity;
+  float accel; 
+  // Constructor
+  Motor(int);
+} Motor;
 
 class StepperMotor {
   private:

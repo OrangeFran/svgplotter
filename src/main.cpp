@@ -135,10 +135,7 @@ void setup() {
   setMotorState(true);
   delay(2000);
 
-  // plotter.joystick(false);
-
-  // plotter.pen.penDown();
-  // plotter.bezierQuadratic(Point(0, 100), Point(100, 100));
+  // Start SD card reader
   readFromSD();
 }
 
