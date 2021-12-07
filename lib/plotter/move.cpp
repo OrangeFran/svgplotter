@@ -8,7 +8,7 @@ void Plotter::makePoint() {
 
 // Move to a coordinate
 void Plotter::moveTo(Point p) {
-  Serial.printf("Moving to %f, %f", p.x, p.y);
+  // Serial.printf("Moving to %f, %f", p.x, p.y);
   // Calculate the necessary movement
   float *newPos = p.getStrings(); 
   float distanceS1 = newPos[0] - this->strings[0];
@@ -20,6 +20,7 @@ void Plotter::moveTo(Point p) {
   // The velocity for the shorter distance will
   // be a fraction of the base velocity of the longer distance
   int velocityS1, velocityS2;
+  // int delayTimeS1, delayTimeS2 = 0;
 
   // Special cases
   if (stepsS1 == 0 && stepsS2 == 0) {
@@ -27,7 +28,7 @@ void Plotter::moveTo(Point p) {
     return;
   } else if (stepsS1 == 0) {
     velocityS2 = baseVelocity; 
-    // int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
+    // delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
     // // Debug output?
     // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
@@ -37,7 +38,7 @@ void Plotter::moveTo(Point p) {
     // Serial.printf("Delay for S2: %d\n", delayTimeS2);
 
     this->stepper2.applyDirection(distanceS2 < 0);
-    this->stepper2.motor->start(velocityS2, stepsS2);
+    this->stepper2.doSteps(velocityS2, stepsS2);
     // this->stepper2.setVelocity(velocityS2, distanceS2 < 0);
     // this->stepper2.start(delayTimeS2);
     // // Wait for the timers to trigger a stop
@@ -45,7 +46,7 @@ void Plotter::moveTo(Point p) {
 
   } else if (stepsS2 == 0) {
     velocityS1 = baseVelocity; 
-    // int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
+    // delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
 
     // // Debug output?
     // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
@@ -55,7 +56,7 @@ void Plotter::moveTo(Point p) {
     // Serial.printf("Delay for S1: %d\n", delayTimeS1);
 
     this->stepper1.applyDirection(distanceS1 < 0);
-    this->stepper1.motor->start(velocityS1, stepsS1);
+    this->stepper1.doSteps(velocityS1, stepsS1);
     // this->stepper1.setVelocity(velocityS1, distanceS1 < 0);
     // this->stepper1.start(delayTimeS1);
     // // Wait for the timers to trigger a stop
@@ -74,14 +75,14 @@ void Plotter::moveTo(Point p) {
       velocityS2 = baseVelocity;
     }
 
-    // int delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
-    // int delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
+    // delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
+    // delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
     // // Debug output?
-    Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
-    Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+    // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
+    // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
     // Serial.printf("New position:  %f, %f\n", p.x, p.y);
-    Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
+    // Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
     // Serial.printf("Delay for S1: %d\n", delayTimeS1);
     // Serial.printf("Delay for S2: %d\n", delayTimeS2);
 
@@ -93,26 +94,20 @@ void Plotter::moveTo(Point p) {
     this->stepper1.applyDirection(distanceS1 < 0);
     this->stepper2.applyDirection(distanceS2 < 0);
 
-    this->stepper1.motor->start((float)velocityS1, stepsS1);
-    // Serial.printf("Acceleration: %f", this->stepper1.motor->accel);
-    this->stepper2.motor->start((float)velocityS2, stepsS2);
-
-    // this->stepper1.start(delayTimeS1);
-    // this->stepper2.start(delayTimeS2);
+    this->stepper1.doSteps((float)velocityS1, stepsS1);
+    this->stepper2.doSteps((float)velocityS2, stepsS2);
   }
 
   // Wait for the timers to trigger a stop
+  // `esp_timer_get_next_alarm()` is -1 if no timer is active
   int next_alarm;
   while (true) {
-    // Serial.printf("Next alarm: %d\n", esp_timer_get_next_alarm());
-    // Serial.printf("Get time: %d\n", esp_timer_get_time());
-    next_alarm = esp_timer_get_next_alarm() - esp_timer_get_time();
-    // Serial.printf("Calculated delay: %d\n", next_alarm);
-    if (next_alarm <= 0) {
-      Serial.println("------ Stopped waiting!");
+    next_alarm = esp_timer_get_next_alarm();
+    if (next_alarm == -1) {
+      // Serial.println("------ Stopped waiting!");
       break;
     };
-    delayMicroseconds(next_alarm);
+    delayMicroseconds(1000);
   }
 
   // Cautionary waiting

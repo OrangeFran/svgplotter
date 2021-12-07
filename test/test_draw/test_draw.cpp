@@ -107,13 +107,15 @@ void setup() {
 
   UNITY_BEGIN();
 
-  // RUN_TEST(test_draw_line_square);
-  // RUN_TEST(test_draw_line_triangle);
-  // RUN_TEST(test_draw_bezier_quadratic);
-  // plotter.pen.penUp();
-  // plotter.moveTo(Point(0, 0));
-  // RUN_TEST(test_draw_bezier_cubic);
+  // Simple
+  RUN_TEST(test_draw_line_square);
+  RUN_TEST(test_draw_line_triangle);
+  RUN_TEST(test_draw_bezier_quadratic);
+  plotter.pen.penUp();
+  plotter.moveTo(Point(0, 0));
+  RUN_TEST(test_draw_bezier_cubic);
 
+  // // Svg files
   // RUN_TEST(test_draw_svg_square);
   // RUN_TEST(test_draw_svg_heart);
   // RUN_TEST(test_draw_svg_curve);

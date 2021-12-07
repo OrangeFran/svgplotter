@@ -82,11 +82,7 @@ const char *findExtension(const char *name) {
   return extension;
 }
 
-void setup() {
-  Serial.begin(9600);
-  setMotorState(true);
-  delay(2000);
-
+void readFromSD() {
   // Setup sd card
   // (https://www.instructables.com/Select-SD-Interface-for-ESP32/)
   // Pins: 13 (CS), 2 (MIS0), 14 (CLK), 15 (MOSI)
@@ -132,6 +128,18 @@ void setup() {
     // Wait 1 sec and try again
     delay(1000);
   }
+}
+
+void setup() {
+  Serial.begin(9600);
+  setMotorState(true);
+  delay(2000);
+
+  // plotter.joystick(false);
+
+  // plotter.pen.penDown();
+  // plotter.bezierQuadratic(Point(0, 100), Point(100, 100));
+  readFromSD();
 }
 
 void loop() {}
