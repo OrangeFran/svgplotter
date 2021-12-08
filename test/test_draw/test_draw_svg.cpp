@@ -21,33 +21,6 @@ Plotter plotter = {
   .pen = pen,
 };
 
-// Manual
-
-void test_draw_line_square() {
-  plotter.pen.penDown();
-  plotter.moveTo(Point(0, 100));
-  plotter.moveTo(Point(100, 100));
-  plotter.moveTo(Point(100, 0));
-  plotter.moveTo(Point(0, 0));
-}
-
-void test_draw_line_triangle() {
-  plotter.pen.penDown();
-  plotter.moveTo(Point(0, 100));
-  plotter.moveTo(Point(100, 100));
-  plotter.moveTo(Point(0, 0));
-}
-
-void test_draw_bezier_quadratic() {
-  plotter.pen.penDown();
-  plotter.bezierQuadratic(Point(0, 100), Point(100, 100));
-}
-
-void test_draw_bezier_cubic() {
-  plotter.pen.penDown();
-  plotter.bezierCubic(Point(0, 100), Point(100, 100), Point(100, 0));
-}
-
 // SVG Files
 
 void test_draw_svg_square() {
@@ -99,27 +72,18 @@ void setup() {
   delay(2000);
 
   // Make sure the pen is up
-  plotter.pen.penDown();
-  plotter.pen.penUp();
+  plotter.makePoint();
 
   // Select position
   plotter.joystick(false);
 
   UNITY_BEGIN();
 
-  // Simple
-  RUN_TEST(test_draw_line_square);
-  RUN_TEST(test_draw_line_triangle);
-  RUN_TEST(test_draw_bezier_quadratic);
-  plotter.pen.penUp();
-  plotter.moveTo(Point(0, 0));
-  RUN_TEST(test_draw_bezier_cubic);
-
-  // // Svg files
-  // RUN_TEST(test_draw_svg_square);
-  // RUN_TEST(test_draw_svg_heart);
-  // RUN_TEST(test_draw_svg_curve);
-  // RUN_TEST(test_draw_svg_text);
+  // Svg files
+  RUN_TEST(test_draw_svg_square);
+  RUN_TEST(test_draw_svg_heart);
+  RUN_TEST(test_draw_svg_curve);
+  RUN_TEST(test_draw_svg_text);
 
   UNITY_END();
 
@@ -127,7 +91,6 @@ void setup() {
   plotter.pen.penUp();
   plotter.moveTo(start);
   setMotorSleep(true);
-
 }
 
 void loop() {}
