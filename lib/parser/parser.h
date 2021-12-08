@@ -6,7 +6,9 @@
 
 class CustomStream {
   public:
+    // Returns the next character
     virtual char read() = 0;
+    // Check if there are chars to read
     virtual bool available() = 0;
 };
 
@@ -16,8 +18,8 @@ class StringStream: public CustomStream {
 
   public:
     StringStream(std::string);
-    char read();
     std::string getString();
+    char read();
     bool available();
 };
 
