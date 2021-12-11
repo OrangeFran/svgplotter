@@ -192,15 +192,16 @@ void StepperMotor::applyDirection(bool shorter) {
 }
 
 // Execute certain amount of steps with specific target velocity
-// If `acceleration` is true, the motor will accelerate to the target velocity
-// if not, the velocity will just be applied
-void StepperMotor::doSteps(float t_velocity, int steps, bool acceleration) {
+// TODO: If `stop` is true, the motor will accelerate from 0 to the target velocity
+// if not, the current velocity will be used 
+void StepperMotor::doSteps(float t_velocity, int steps, bool stop) {
   if (this->attached) {
-
-    this->motor->velocity = 0;
+    if (stop) {
+      this->motor->velocity = 0;
+    }
     this->motor->stepsToDo = steps;
     this->motor->target_velocity = t_velocity;
-    this->motor->accel = t_velocity/10.0;
+    this->motor->accel = (t_velocity - this->motor->velocity)/10.0;
 
     // Start the accel timer (1s (10 x 0.1s))
     // The accel timer will automatically start
@@ -208,11 +209,3 @@ void StepperMotor::doSteps(float t_velocity, int steps, bool acceleration) {
     esp_timer_start_periodic(this->motor->accel_timer, 1000000 * accelDelay);
   }
 }
-
-// // Stop the motor
-// void StepperMotor::stop() {
-//   if (this->attached) {
-//     ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-//     ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(index));
-//   }
-// }

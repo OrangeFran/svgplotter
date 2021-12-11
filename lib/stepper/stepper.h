@@ -7,8 +7,6 @@ void setMotorState(bool);
 void setMotorSleep(bool);
 
 extern const float perstep;
-// Global turned on state of motors
-// extern bool motorState;
 
 extern const int penPin;
 // Pins to set direction and move ({ leftPin, rightPin })
@@ -21,10 +19,11 @@ extern const int stepPins[2];
 typedef struct Motor {
   int index; // Left motor -> 0, right motor -> 1
   float velocity; // Steps per second (= Hz)
+  // Hardware-Timers
   esp_timer_handle_t accel_timer;
   esp_timer_handle_t stop_timer;
   int stepsToDo;
-  float target_velocity;
+  float target_velocity; // Steps per second (= Hz)
   float accel; 
   // Constructor
   Motor(int);
@@ -41,15 +40,15 @@ class StepperMotor {
 
   public:
     int index; // Left motor -> 0, right motor -> 1
-
     StepperMotor(int, int, int);
     void step(void);
+    // Attach/detach step pin from PWM channel
+    // The pin needs to be detached for joystick control
     void attachPin(void);
     void detachPin(void);
     void applyDirection(bool);
-    // void applyVelocity(float);
     // PWM signal controls
-    void doSteps(float, int);
+    void doSteps(float, int, bool);
 };
 
 #endif
