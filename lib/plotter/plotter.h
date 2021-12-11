@@ -19,7 +19,6 @@ class Point {
     float y;
 
     Point(float, float);
-
     // Calculates the string length for the point
     float *getStrings(void);
 };
@@ -39,11 +38,10 @@ class Plotter {
 
     // Move directly to a point
     // Results in a curved line (workaround: `splitMove`)
-    // NOTE: Fix curve line
-    void moveTo(Point);
+    void moveTo(Point, bool = true);
 
     // Split one line into multiple segements
-    // and draw them individually
+    // and draw them individually -> straight line
     void splitMove(Point);
 
     // Draw a quadratic and a cubic bezier curve

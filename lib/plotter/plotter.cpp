@@ -46,12 +46,6 @@ void Plotter::executeSVG(SVG svg) {
       // Get the next element
       std::pair<char, std::vector<float> > c = res[i];
 
-      // Logging
-      // // Clear line with 100 whitespaces
-      // char whitespaces[110];
-      // strcat(whitespaces, "\r");
-      // strcat(whitespaces, repeatString(' ', 100));
-      // Serial.printf("%s", whitespaces);
       Serial.printf("--> %c ", c.first);
       for (int i = 0; i < c.second.size(); i += 1) {
         Serial.printf("%f ", c.second[i]);

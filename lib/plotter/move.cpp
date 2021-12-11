@@ -7,7 +7,9 @@ void Plotter::makePoint() {
 }
 
 // Move to a coordinate
-void Plotter::moveTo(Point p) {
+// If `stop` is true (default), the motor will
+// reset the velocity to 0 after stopping
+void Plotter::moveTo(Point p, bool stop) {
   // Serial.printf("Moving to %f, %f", p.x, p.y);
   // Calculate the necessary movement
   float *newPos = p.getStrings(); 
@@ -20,7 +22,6 @@ void Plotter::moveTo(Point p) {
   // The velocity for the shorter distance will
   // be a fraction of the base velocity of the longer distance
   int velocityS1, velocityS2;
-  // int delayTimeS1, delayTimeS2 = 0;
 
   // Special cases
   if (stepsS1 == 0 && stepsS2 == 0) {
@@ -28,39 +29,27 @@ void Plotter::moveTo(Point p) {
     return;
   } else if (stepsS1 == 0) {
     velocityS2 = baseVelocity; 
-    // delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
     // // Debug output?
     // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
     // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
     // Serial.printf("New position:  %f, %f\n", p.x, p.y);
     // Serial.printf("Velocity: %d\n", velocityS2);
-    // Serial.printf("Delay for S2: %d\n", delayTimeS2);
 
     this->stepper2.applyDirection(distanceS2 < 0);
-    this->stepper2.doSteps(velocityS2, stepsS2);
-    // this->stepper2.setVelocity(velocityS2, distanceS2 < 0);
-    // this->stepper2.start(delayTimeS2);
-    // // Wait for the timers to trigger a stop
-    // delayMicroseconds(esp_timer_get_next_alarm() - esp_timer_get_time());
+    this->stepper2.doSteps(velocityS2, stepsS2, stop);
 
   } else if (stepsS2 == 0) {
     velocityS1 = baseVelocity; 
-    // delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
 
     // // Debug output?
     // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
     // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
     // Serial.printf("New position:  %f, %f\n", p.x, p.y);
     // Serial.printf("Velocity: %d\n", velocityS1);
-    // Serial.printf("Delay for S1: %d\n", delayTimeS1);
 
     this->stepper1.applyDirection(distanceS1 < 0);
-    this->stepper1.doSteps(velocityS1, stepsS1);
-    // this->stepper1.setVelocity(velocityS1, distanceS1 < 0);
-    // this->stepper1.start(delayTimeS1);
-    // // Wait for the timers to trigger a stop
-    // delayMicroseconds(esp_timer_get_next_alarm() - esp_timer_get_time());
+    this->stepper1.doSteps(velocityS1, stepsS1, stop);
 
   // Normal cases
   } else {
@@ -75,16 +64,11 @@ void Plotter::moveTo(Point p) {
       velocityS2 = baseVelocity;
     }
 
-    // delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
-    // delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
-
     // // Debug output?
     // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
     // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
     // Serial.printf("New position:  %f, %f\n", p.x, p.y);
     // Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
-    // Serial.printf("Delay for S1: %d\n", delayTimeS1);
-    // Serial.printf("Delay for S2: %d\n", delayTimeS2);
 
     // NOTE: Other approaches tried:
     //         - seperate threads for each motor
@@ -94,8 +78,8 @@ void Plotter::moveTo(Point p) {
     this->stepper1.applyDirection(distanceS1 < 0);
     this->stepper2.applyDirection(distanceS2 < 0);
 
-    this->stepper1.doSteps((float)velocityS1, stepsS1);
-    this->stepper2.doSteps((float)velocityS2, stepsS2);
+    this->stepper1.doSteps((float)velocityS1, stepsS1, stop);
+    this->stepper2.doSteps((float)velocityS2, stepsS2, stop);
   }
 
   // Wait for the timers to trigger a stop
@@ -104,14 +88,10 @@ void Plotter::moveTo(Point p) {
   while (true) {
     next_alarm = esp_timer_get_next_alarm();
     if (next_alarm == -1) {
-      // Serial.println("------ Stopped waiting!");
       break;
     };
     delayMicroseconds(1000);
   }
-
-  // Cautionary waiting
-  delay(100);
 
   // Update the position
   this->pos = p;
@@ -131,10 +111,12 @@ void Plotter::splitMove(Point p) {
   float length = sqrt(pow(diffs[0], 2) + pow(diffs[1], 2));
 
   // Split a distance into 20mm pieces
-  float accuracy = length/20;
+  float accuracy = round(length/20.0);
   float increase = 1/accuracy;
 
-  for (float t = increase; t <= (float)1.0; t += increase) {
+  float t = 0.0;
+  for (int i = 0; i < accuracy; i++) {
+    t += increase;
     x = start.x + t * diffs[0];
     y = start.y + t * diffs[1];
     this->moveTo(Point(x, y));
@@ -143,5 +125,5 @@ void Plotter::splitMove(Point p) {
   // Move to end position
   // if all increases did not exactly add up to 1.0
   // NOTE: Needed?
-  this->moveTo(p);
+  // this->moveTo(p);
 }
