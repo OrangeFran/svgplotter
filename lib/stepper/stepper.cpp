@@ -53,11 +53,12 @@ void accelCallback(void *_motor) {
 
   // Increase velocity
   motor->velocity += motor->accel;
+  int predictedSteps = (int)round(motor->velocity * accelDelay);
   // If no step is done, don't bother
-  if (round(motor->velocity * accelDelay) < 1) {
-    // Serial.printf("Skipping with velocity: %f\n", stepper->velocity);
+  if (predictedSteps < 1) {
     return;
   }
+
   // Apply the velocity
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index), (int)round(motor->velocity)); 
   // The duty cycle does not have to be accurate to the point
@@ -70,7 +71,7 @@ void accelCallback(void *_motor) {
   // Start a stop timer if
   // -> all the steps will be executed before the next accel timer is called
   // -> or the plotter is fully accelerated
-  if (motor->stepsToDo <= round(motor->velocity * accelDelay) || round(motor->velocity) == round(motor->target_velocity)) {
+  if (motor->stepsToDo <= predictedSteps || round(motor->velocity) == round(motor->target_velocity)) {
     // Calculate the remaining time
     int delay = round((float)(motor->stepsToDo)/(float)(motor->velocity) * 1000000.0);
     motor->stepsToDo = 0;
@@ -79,7 +80,7 @@ void accelCallback(void *_motor) {
     esp_timer_start_once(motor->stop_timer, delay);
   } else {
     // Else calculate steps done until next callback 
-    motor->stepsToDo -= (int)round(motor->velocity * accelDelay);
+    motor->stepsToDo -= predictedSteps;
   }
   // Resume the PWM signal
   ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
@@ -190,7 +191,9 @@ void StepperMotor::applyDirection(bool shorter) {
   digitalWrite(this->dirPin, shorter ? (int)!(bool)this->index : this->index);
 }
 
-// Make the string for a certain motor longer/shorter
+// Execute certain amount of steps with specific target velocity
+// TODO: If `acceleration` is true, the motor will accelerate to the target velocity
+// if not, the velocity will just be applied
 void StepperMotor::doSteps(float t_velocity, int steps) {
   if (this->attached) {
     this->motor->velocity = 0;
