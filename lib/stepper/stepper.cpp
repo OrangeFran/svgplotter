@@ -8,6 +8,8 @@
 // 20 * π / (200 * 32)
 const float perstep = 0.009817477;
 
+const float acceleration = 3000; // steps per second per second
+// Accelerate every tenth of a second
 const float accelDelay = 0.1;
 
 // Global turned on state of motors
@@ -51,13 +53,21 @@ void accelCallback(void *_motor) {
   ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
 
-  // Increase velocity
-  motor->velocity += motor->accel;
-  int predictedSteps = (int)round(motor->velocity * accelDelay);
-  // If no step is done, don't bother
-  if (predictedSteps < 1) {
-    return;
+  // Check if full acceleration can be applied
+  if (round(motor->velocity) + motor->accel > round(motor->target_velocity)) {
+    motor->velocity = motor->target_velocity;
+  } else {
+    // Increase velocity
+    motor->velocity += motor->accel;
+    // // TODO: Needed?
+    // int predictedSteps = (int)round(motor->velocity * accelDelay);
+    // // If no step is done, don't bother
+    // if (predictedSteps < 1) {
+    //   return;
+    // }
   }
+  
+  int predictedSteps = round(motor->velocity * accelDelay);
 
   // Apply the velocity
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index), (int)round(motor->velocity)); 
@@ -199,7 +209,8 @@ void StepperMotor::doSteps(float t_velocity, int steps) {
     this->motor->velocity = 0;
     this->motor->stepsToDo = steps;
     this->motor->target_velocity = t_velocity;
-    this->motor->accel = t_velocity/10.0;
+    // this->motor->accel = (t_velocity - this->motor->velocity)/10.0;
+    this->motor->accel = acceleration * accelDelay;
 
     // Start the accel timer (1s (10 x 0.1s))
     // The accel timer will automatically start

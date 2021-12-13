@@ -7,8 +7,7 @@ void setMotorState(bool);
 void setMotorSleep(bool);
 
 extern const float perstep;
-// Global turned on state of motors
-// extern bool motorState;
+extern const float acceleration;
 
 extern const int penPin;
 // Pins to set direction and move ({ leftPin, rightPin })
