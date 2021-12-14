@@ -20,6 +20,7 @@ void Plotter::moveTo(Point p) {
   // The velocity for the shorter distance will
   // be a fraction of the base velocity of the longer distance
   int velocityS1, velocityS2;
+  int accelerationS1, accelerationS2;
   // int delayTimeS1, delayTimeS2 = 0;
 
   // Special cases
@@ -28,6 +29,7 @@ void Plotter::moveTo(Point p) {
     return;
   } else if (stepsS1 == 0) {
     velocityS2 = baseVelocity; 
+    accelerationS2 = baseAcceleration;
     // delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
     // // Debug output?
@@ -38,7 +40,7 @@ void Plotter::moveTo(Point p) {
     // Serial.printf("Delay for S2: %d\n", delayTimeS2);
 
     this->stepper2.applyDirection(distanceS2 < 0);
-    this->stepper2.doSteps(velocityS2, stepsS2);
+    this->stepper2.doSteps(velocityS2, accelerationS2, stepsS2);
     // this->stepper2.setVelocity(velocityS2, distanceS2 < 0);
     // this->stepper2.start(delayTimeS2);
     // // Wait for the timers to trigger a stop
@@ -46,6 +48,7 @@ void Plotter::moveTo(Point p) {
 
   } else if (stepsS2 == 0) {
     velocityS1 = baseVelocity; 
+    accelerationS1 = baseAcceleration;
     // delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
 
     // // Debug output?
@@ -56,7 +59,7 @@ void Plotter::moveTo(Point p) {
     // Serial.printf("Delay for S1: %d\n", delayTimeS1);
 
     this->stepper1.applyDirection(distanceS1 < 0);
-    this->stepper1.doSteps(velocityS1, stepsS1);
+    this->stepper1.doSteps(velocityS1, accelerationS1, stepsS1);
     // this->stepper1.setVelocity(velocityS1, distanceS1 < 0);
     // this->stepper1.start(delayTimeS1);
     // // Wait for the timers to trigger a stop
@@ -66,17 +69,20 @@ void Plotter::moveTo(Point p) {
   } else {
     if (stepsS1 > stepsS2) {
       velocityS1 = baseVelocity;
+      accelerationS1 = baseAcceleration;
       velocityS2 = round((float)stepsS2/(float)stepsS1 * baseVelocity);
+      accelerationS2 = round((float)velocityS2/(float)velocityS1 * baseAcceleration);
     } else if (stepsS1 < stepsS2) {
       velocityS2 = baseVelocity;
+      accelerationS2 = baseAcceleration;
       velocityS1 = round((float)stepsS1/(float)stepsS2 * baseVelocity);
+      accelerationS1 = round((float)velocityS1/(float)velocityS2 * baseAcceleration);
     } else {
       velocityS1 = baseVelocity;
+      accelerationS1 = baseAcceleration;
       velocityS2 = baseVelocity;
+      accelerationS2 = baseAcceleration;
     }
-
-    // delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
-    // delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
     // // Debug output?
     // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
@@ -94,8 +100,8 @@ void Plotter::moveTo(Point p) {
     this->stepper1.applyDirection(distanceS1 < 0);
     this->stepper2.applyDirection(distanceS2 < 0);
 
-    this->stepper1.doSteps((float)velocityS1, stepsS1);
-    this->stepper2.doSteps((float)velocityS2, stepsS2);
+    this->stepper1.doSteps(velocityS1, accelerationS1, stepsS1);
+    this->stepper2.doSteps(velocityS2, accelerationS2, stepsS2);
   }
 
   // Wait for the timers to trigger a stop

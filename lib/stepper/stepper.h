@@ -7,7 +7,6 @@ void setMotorState(bool);
 void setMotorSleep(bool);
 
 extern const float perstep;
-extern const float acceleration;
 
 extern const int penPin;
 // Pins to set direction and move ({ leftPin, rightPin })
@@ -48,7 +47,7 @@ class StepperMotor {
     void applyDirection(bool);
     // void applyVelocity(float);
     // PWM signal controls
-    void doSteps(float, int);
+    void doSteps(float, float, int);
 };
 
 #endif

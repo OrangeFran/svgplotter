@@ -10,6 +10,8 @@ extern const float boardWidth;
 extern const float boardHeight;
 
 extern const float baseVelocity;
+extern const float baseAcceleration;
+
 extern const int joyPins[3];
 
 // Two-dimensional point
