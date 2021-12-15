@@ -55,7 +55,7 @@ void accelCallback(void *_motor) {
   float appliedAcceleration = motor->accel * accelDelay;
 
   // Check if full acceleration can be applied
-  if (round(motor->velocity) + appliedAcceleration > round(motor->target_velocity)) {
+  if (round(motor->velocity + appliedAcceleration) > round(motor->target_velocity)) {
     motor->velocity = motor->target_velocity;
   } else {
     // Increase velocity
@@ -67,13 +67,19 @@ void accelCallback(void *_motor) {
     //   return;
     // }
   }
-   
+
   int predictedSteps = round(motor->velocity * accelDelay);
 
+  Serial.printf("Velocity (%d): %f\n", motor->index, motor->velocity);
+  Serial.printf("Applied acceleration: %f\n", appliedAcceleration); 
+  Serial.printf("Predicted steps: %d", predictedSteps);
+
   // Apply the velocity
+  Serial.println("Applying frequency ...");
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index), (int)round(motor->velocity)); 
   // The duty cycle does not have to be accurate to the point
   // Delay of 2 microseconds = freq of 500000Hz
+  Serial.println("Applying duty ...");
   int dutyCycle = round((float)round(motor->velocity)/500000.0 * 16383.0);
   // Use one if dutyCycle is too small
   ledc_set_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(motor->index), dutyCycle == 0 ? 1 : dutyCycle);
@@ -84,6 +90,7 @@ void accelCallback(void *_motor) {
   // -> or the plotter is fully accelerated
   if (motor->stepsToDo <= predictedSteps || round(motor->velocity) == round(motor->target_velocity)) {
     // Calculate the remaining time
+    Serial.println("Calculating delay ...");
     int delay = round((float)(motor->stepsToDo)/(float)(motor->velocity) * 1000000.0);
     motor->stepsToDo = 0;
     // Stop the acceleration timer and start the stop timer
