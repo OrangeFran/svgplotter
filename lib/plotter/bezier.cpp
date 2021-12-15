@@ -15,7 +15,7 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
   // float accuracy = aproxLength < 50.0 ? aproxLength * 2.0 : aproxLength + 50.0;
   // float accuracy = aproxLength < 2.0 ? 3 : 10.0 * log(aproxLength);
   int accuracy = round(aproxLength < 2.0 ? 5.0 : 5.0 * log2(aproxLength));
-  float increase = 1.0/accuracy;
+  float increase = 1.0/(float)accuracy;
 
   // Move parameter t from 0.0 to 1.0
   // Serial.printf("acc: %f\n", accuracy);
@@ -28,6 +28,7 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
     this->moveTo(Point(x, y));
     // Serial.printf("T: %f ", t);
   }
+  // this->moveTo(p2);
 }
 
 // `B(t) = (1 - t)^3 P_0 + 3t (1 - t)^2 P_1 + 3t^2 (1 - t) P_2 + t^3 P_3`
@@ -40,7 +41,7 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
     pow(pow(this->pos.x - p1.x, 2) + pow(this->pos.y - this->pos.y, 2), 0.5)
       + pow(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2), 0.5) + pow(pow(p2.x - p3.x, 2) + pow(p2.y - p3.y, 2), 0.5);
   int accuracy = round(aproxLength < 2.0 ? 5.0 : 5.0 * log2(aproxLength));
-  float increase = 1.0/accuracy;
+  float increase = 1.0/(float)accuracy;
 
   // Move parameter t from 0.0 to 1.0
   // Serial.printf("acc: %f", accuracy);
@@ -50,6 +51,6 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
     x = pow((1.0 - t), 3) * p0.x + 3.0 * t * pow((1.0 - t), 2) * p1.x + 3.0 * pow(t, 2) * (1.0 - t) * p2.x + pow(t, 3) * p3.x;
     y = pow((1.0 - t), 3) * p0.y + 3.0 * t * pow((1.0 - t), 2) * p1.y + 3.0 * pow(t, 2) * (1.0 - t) * p2.y + pow(t, 3) * p3.y;
     this->moveTo(Point(x, y));
-    // Serial.printf("T: %f", t);
   }
+  // this->moveTo(p3);
 }
