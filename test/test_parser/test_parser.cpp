@@ -64,7 +64,6 @@ void test_parser_valid_svg() {
   TEST_ASSERT_EQUAL_FLOAT(100.0, path->at(0).second[1]);
 }
 
-
 void test_parser_valid_parse_path() {
   const std::string s =
     // "<?xml version=\"1.0\" ?>\n"
@@ -110,6 +109,22 @@ void test_parser_valid_parse_path_no_space() {
   TEST_ASSERT_EQUAL_FLOAT(200.0, path->at(0).second[1]);
 }
 
+void test_parser_valid_parse_path_with_scale() {
+  const std::string s =
+    // "<?xml version=\"1.0\" ?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+      "<path color=\"blue\" d=\"M150 400\">\n"
+    "</svg>";
+
+  CustomStream *sstream = new StringStream(s);
+  SVG svg = SVG(sstream);
+  svg.scale(100.0);
+  auto *path = svg.parseNextPath();
+
+  TEST_ASSERT_EQUAL_FLOAT(30.0, path->at(0).second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(80.0, path->at(0).second[1]);
+}
+
 // Run tests on native os
 // `pio test -e native -v`
 int main() {
@@ -121,6 +136,7 @@ int main() {
   RUN_TEST(test_parser_valid_parse_path);
   RUN_TEST(test_parser_valid_parse_path_float);
   RUN_TEST(test_parser_valid_parse_path_no_space);
+  RUN_TEST(test_parser_valid_parse_path_with_scale);
   UNITY_END();
 }
 
