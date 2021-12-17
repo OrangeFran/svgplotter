@@ -97,7 +97,7 @@ void Plotter::executeSVG(SVG svg) {
            y1 = this->pos.y;
           // Relative coordinates
           if (c.first == 'h') {
-            x1 += this->pos.x;
+            x1 += this->pos.x - start.x;
           }
           this->pen.penDown();
           this->splitMove(Point(x1, y1));
@@ -160,10 +160,6 @@ void Plotter::executeSVG(SVG svg) {
             y1 += this->pos.y - start.y;
             x2 += this->pos.x - start.x;
             y2 += this->pos.y - start.y;
-            // x1 += this->pos.x;
-            // y1 += this->pos.y;
-            // x2 += this->pos.x;
-            // y2 += this->pos.y;
           }
           this->pen.penDown();
           this->bezierQuadratic(Point(x1, y1), Point(x2, y2));
