@@ -32,12 +32,12 @@ void Plotter::moveTo(Point p) {
     accelerationS2 = baseAcceleration;
     // delayTimeS2 = round((float)stepsS2/(float)velocityS2 * 1000000);
 
-    // Debug output?
-    Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
-    Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
-    Serial.printf("New position:  %f, %f\n", p.x, p.y);
-    Serial.printf("Velocity: %d\n", velocityS2);
-    Serial.printf("Delay: %d\n", accelerationS2);
+    // // Debug output?
+    // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
+    // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+    // Serial.printf("New position:  %f, %f\n", p.x, p.y);
+    // Serial.printf("Velocity: %d\n", velocityS2);
+    // Serial.printf("Delay: %d\n", accelerationS2);
 
     this->stepper2.applyDirection(distanceS2 < 0);
     this->stepper2.doSteps(velocityS2, accelerationS2, stepsS2);
@@ -47,12 +47,12 @@ void Plotter::moveTo(Point p) {
     accelerationS1 = baseAcceleration;
     // delayTimeS1 = round((float)stepsS1/(float)velocityS1 * 1000000);
 
-    // Debug output?
-    Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
-    Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
-    Serial.printf("New position:  %f, %f\n", p.x, p.y);
-    Serial.printf("Velocity: %d\n", velocityS1);
-    Serial.printf("Delay: %d\n", accelerationS1);
+    // // Debug output?
+    // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
+    // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+    // Serial.printf("New position:  %f, %f\n", p.x, p.y);
+    // Serial.printf("Velocity: %d\n", velocityS1);
+    // Serial.printf("Delay: %d\n", accelerationS1);
 
     this->stepper1.applyDirection(distanceS1 < 0);
     this->stepper1.doSteps(velocityS1, accelerationS1, stepsS1);
@@ -76,12 +76,12 @@ void Plotter::moveTo(Point p) {
       accelerationS2 = baseAcceleration;
     }
 
-    // Debug output?
-    Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
-    Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
-    Serial.printf("New position:  %f, %f\n", p.x, p.y);
-    Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
-    Serial.printf("Accelerations: %f, %f\n", accelerationS1, accelerationS2);
+    // // Debug output?
+    // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
+    // Serial.printf("Distances: %f, %f\n", distanceS1, distanceS2);
+    // Serial.printf("New position:  %f, %f\n", p.x, p.y);
+    // Serial.printf("Velocities: %d, %d\n", velocityS1, velocityS2);
+    // Serial.printf("Accelerations: %d, %d\n", accelerationS1, accelerationS2);
 
     // NOTE: Other approaches tried:
     //         - seperate threads for each motor
