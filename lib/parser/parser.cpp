@@ -211,21 +211,21 @@ SVG::SVG(CustomStream *stream) {
 // Docs: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
 
 // Parse path
-std::vector<std::pair<char, std::vector<float> > > followPath(std::string path) {
+std::vector<std::pair<char, std::vector<float> > > *followPath(std::string path) {
   int index = -1;
   std::string curr;
 
-  static std::vector<std::pair<char, std::vector<float> > > actions;
+  auto *actions = new std::vector<std::pair<char, std::vector<float> > >;
 
-  // Clear the vector
-  std::vector<std::pair<char, std::vector<float> > > empty;
-  actions = empty;
+  // // Clear the vector
+  // std::vector<std::pair<char, std::vector<float> > > empty;
+  // actions = empty;
 
   for (char c: path) {
     // Arguments are seperated by spaces
     if (c == ' ' || c == ',') {
       if (!curr.empty()) {
-        actions[index].second.push_back(strtof(curr.c_str(), NULL));
+        actions->at(index).second.push_back(strtof(curr.c_str(), NULL));
         curr = "";
       }
 
@@ -236,11 +236,11 @@ std::vector<std::pair<char, std::vector<float> > > followPath(std::string path) 
     } else {
       // Add the number to the vector if there is one
       if (!curr.empty()) {
-        actions[index].second.push_back(strtof(curr.c_str(), NULL));
+        actions->at(index).second.push_back(strtof(curr.c_str(), NULL));
         curr = "";
       }
       index += 1;
-      actions.push_back(
+      actions->push_back(
         std::pair<char, std::vector<float> >(c, std::vector<float>(0))
       );
     }    
@@ -249,7 +249,7 @@ std::vector<std::pair<char, std::vector<float> > > followPath(std::string path) 
   // If the string ended, check if command/coordinate still needs
   // to be added to the vector
   if (!curr.empty()) {
-    actions[index].second.push_back(strtof(curr.c_str(), NULL));
+    actions->at(index).second.push_back(strtof(curr.c_str(), NULL));
     curr = "";
   }
 
@@ -262,9 +262,9 @@ bool SVG::pathAvailable() {
 
 // Return the next path as a vector of commands and coordinates
 // Before calling this function, make sure to see if there are commands left
-std::vector<std::pair<char, std::vector<float> > > SVG::parseNextPath() {
+std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
   std::string nextPath = findPath(this->stream);
-  std::vector<std::pair<char, std::vector<float> > > parsedPath = followPath(nextPath);
+  auto *parsedPath = followPath(nextPath);
   // // Apply scaling
   // if (this->scaleFactor != 0) {
   //   for (int i = 0; i < parsedPath.size(); i++) {

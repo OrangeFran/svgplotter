@@ -35,7 +35,7 @@ void Plotter::executeSVG(SVG svg) {
   float x1, y1, x2, y2, x3, y3;
   // Retrieve the vector with all of the commands + coordinates
   while (true) {
-    std::vector<std::pair<char, std::vector<float> > > res = svg.parseNextPath();
+    auto *res = svg.parseNextPath();
     // Check if path was available
     if (!svg.pathAvailable()) {
       // Everything drawn

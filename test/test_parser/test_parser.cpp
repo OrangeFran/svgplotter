@@ -55,13 +55,13 @@ void test_parser_valid_svg() {
   CustomStream *sstream = new StringStream(s);
   SVG svg = SVG(sstream);
   float expectedViewBox[4] = { 0.0, 0.0, 500.0, 500.0 };
-  std::vector<std::pair<char, std::vector<float> > > path = svg.parseNextPath();
+  auto *path = svg.parseNextPath();
 
   TEST_ASSERT_EQUAL_FLOAT_ARRAY(expectedViewBox, svg.viewBox, 4);
   
-  TEST_ASSERT_EQUAL_INT((int)'M', (int)path[0].first);
-  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[1]);
+  TEST_ASSERT_EQUAL_INT((int)'M', (int)path->at(0).first);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path->at(0).second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path->at(0).second[1]);
 }
 
 
@@ -74,10 +74,10 @@ void test_parser_valid_parse_path() {
 
   CustomStream *sstream = new StringStream(s);
   SVG svg = SVG(sstream);
-  std::vector<std::pair<char, std::vector<float> > > path = svg.parseNextPath();
+  auto *path = svg.parseNextPath();
 
-  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[1]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path->at(0).second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path->at(0).second[1]);
 }
 
 void test_parser_valid_parse_path_float() {
@@ -89,10 +89,10 @@ void test_parser_valid_parse_path_float() {
 
   CustomStream *sstream = new StringStream(s);
   SVG svg = SVG(sstream);
-  std::vector<std::pair<char, std::vector<float> > > path = svg.parseNextPath();
+  auto *path = svg.parseNextPath();
 
-  TEST_ASSERT_EQUAL_FLOAT(100.5, path[0].second[0]);
-  TEST_ASSERT_EQUAL_FLOAT(100.145, path[0].second[1]);
+  TEST_ASSERT_EQUAL_FLOAT(100.5, path->at(0).second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(100.145, path->at(0).second[1]);
 }
 
 void test_parser_valid_parse_path_no_space() {
@@ -104,10 +104,10 @@ void test_parser_valid_parse_path_no_space() {
 
   CustomStream *sstream = new StringStream(s);
   SVG svg = SVG(sstream);
-  std::vector<std::pair<char, std::vector<float> > > path = svg.parseNextPath();
+  auto *path = svg.parseNextPath();
 
-  TEST_ASSERT_EQUAL_FLOAT(100.0, path[0].second[0]);
-  TEST_ASSERT_EQUAL_FLOAT(200.0, path[0].second[1]);
+  TEST_ASSERT_EQUAL_FLOAT(100.0, path->at(0).second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(200.0, path->at(0).second[1]);
 }
 
 // Run tests on native os

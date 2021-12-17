@@ -37,7 +37,7 @@ class SVG {
     bool pathAvailable();
     // Returns the next path
     // Applies scaling
-    std::vector<std::pair<char, std::vector<float> > > parseNextPath(void);
+    std::vector<std::pair<char, std::vector<float> > > *parseNextPath(void);
     // void setRotation(float);
     void scale(float);
 };
