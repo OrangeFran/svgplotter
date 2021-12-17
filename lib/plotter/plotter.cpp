@@ -148,9 +148,10 @@ void Plotter::executeSVG(SVG svg) {
         // https://www.inf.ed.ac.uk/teaching/courses/cg/d3/bezierJoin.html
         case 't':
         case 'T':
+          // TODO: Test
           // `P_1 = 2 * P_0 - P_old_1`
-           x1 = 2.0 * this->pos.x - res[i - 1].second[0] + start.x;
-           y1 = - 2.0 * this->pos.y - res[i - 1].second[1] + start.y; // TODO: Check if correct!!!
+           x1 = 2.0 * res[i - 1].second[2] - res[i - 1].second[0] + start.x;
+           y1 = - 2.0 * res[i - 1].second[3] + res[i - 1].second[1] + start.y;
            x2 = c.second[0] + start.x;
            y2 = - c.second[1] + start.y;
           // Relative coordinates
@@ -195,12 +196,12 @@ void Plotter::executeSVG(SVG svg) {
         case 's':
         case 'S':
           // `P_1 = 2 * P_0 - P_old_2`
-           x1 = 2.0 * this->pos.x - res[i - 1].second[2] + start.x;
-           y1 = - 2.0 * this->pos.y - res[i - 1].second[3] + start.y;
-           x2 = c.second[0] + start.x;
-           y2 = - c.second[1] + start.y;
-           x3 = c.second[2] + start.x;
-           y3 = - c.second[3] + start.y;
+          x1 = 2.0 * res[i - 1].second[4] - res[i - 1].second[2] + start.x;
+          y1 = - 2.0 * res[i - 1].second[5] + res[i - 1].second[3] + start.y;
+          x2 = c.second[0] + start.x;
+          y2 = - c.second[1] + start.y;
+          x3 = c.second[2] + start.x;
+          y3 = - c.second[3] + start.y;
           // Relative coordinates
           if (c.first == 's') {
             x1 += this->pos.x - start.x;
