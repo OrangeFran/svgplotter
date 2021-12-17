@@ -130,7 +130,7 @@ void Plotter::splitMove(Point p) {
   int accuracy = round(length/20);
   float increase = 1.0/(float)accuracy;
 
-  float t = 0;
+  float t = 0.0;
   for (int i = 0; i < accuracy; i++) {
     t += increase;
     x = start.x + t * diffs[0];
@@ -138,7 +138,5 @@ void Plotter::splitMove(Point p) {
     this->moveTo(Point(x, y));
   }
 
-  // Move to end position
-  // if all increases did not exactly add up to 1.0
-  this->moveTo(p);
+  delay(100);
 }
