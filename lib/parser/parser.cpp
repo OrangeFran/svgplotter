@@ -221,7 +221,6 @@ std::vector<std::pair<char, std::vector<float> > > followPath(std::string path) 
   std::vector<std::pair<char, std::vector<float> > > empty;
   actions = empty;
 
-
   for (char c: path) {
     // Arguments are seperated by spaces
     if (c == ' ' || c == ',') {
@@ -247,7 +246,8 @@ std::vector<std::pair<char, std::vector<float> > > followPath(std::string path) 
     }    
   }
 
-  // If the string ended, check for analyzed args
+  // If the string ended, check if command/coordinate still needs
+  // to be added to the vector
   if (!curr.empty()) {
     actions[index].second.push_back(strtof(curr.c_str(), NULL));
     curr = "";
@@ -264,24 +264,33 @@ bool SVG::pathAvailable() {
 // Before calling this function, make sure to see if there are commands left
 std::vector<std::pair<char, std::vector<float> > > SVG::parseNextPath() {
   std::string nextPath = findPath(this->stream);
-  return followPath(nextPath);
+  std::vector<std::pair<char, std::vector<float> > > parsedPath = followPath(nextPath);
+  // // Apply scaling
+  // if (this->scaleFactor != 0) {
+  //   for (int i = 0; i < parsedPath.size(); i++) {
+  //     for (int b = 0; b < parsedPath[i].second.size(); b++) {
+  //       parsedPath[i].second[b] *= this->scaleFactor;
+  //     }
+  //   }
+  // }
+  return parsedPath;
 }
 
-// void SVG::scale(float width) {
-//   float factor = width/this->viewBox[2];
-//   Serial.printf("factor: %f\n", factor);
-//   // Update viewBox
-//   for (int i = 0; i < 4; i++) {
-//     this->viewBox[i] *= factor;
-//   }
-//   // Update the coordinates
-//   for (int i = 0; i < this->actions.size(); i++) {
-//     // Get the next element
-//     for (int b = 0; b < this->actions[i].second.size(); b++) {
-//       this->actions[i].second[b] *= factor;
-//     }
-//   }
-// }
+void SVG::scale(float width) {
+  this->scaleFactor = width/this->viewBox[2];
+  // Serial.printf("Factor: %f\n", this->scaleFactor);
+  // Update viewBox
+  for (int i = 0; i < 4; i++) {
+    this->viewBox[i] *= this->scaleFactor;
+  }
+  // The coordinates get updated when they are read
+  // for (int i = 0; i < this->actions.size(); i++) {
+  //   // Get the next element
+  //   for (int b = 0; b < this->actions[i].second.size(); b++) {
+  //     this->actions[i].second[b] *= factor;
+  //   }
+  // }
+}
 
 // // This has to be done when executing the svg
 // void SVG::setRotation(float degree) {

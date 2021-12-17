@@ -27,7 +27,7 @@ class SVG {
   public:
     CustomStream *stream;
     float viewBox[4];
-    float factor; // Factor for scaling 
+    float scaleFactor; // Factor for scaling 
     // std::string path;
     // std::vector<std::pair<char, std::vector<float> > > actions;
     // float rotation;
@@ -35,6 +35,8 @@ class SVG {
     // Constructor
     SVG(CustomStream *);
     bool pathAvailable();
+    // Returns the next path
+    // Applies scaling
     std::vector<std::pair<char, std::vector<float> > > parseNextPath(void);
     // void setRotation(float);
     void scale(float);
