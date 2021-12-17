@@ -35,30 +35,30 @@ void draw(CustomStream *stream, bool scale) {
   SVG svg = SVG(stream);
 
   plotter.joystick(false);
-  // if (scale) {
-    // plotter.makePoint();
-    // // Save the position to drive back
-    // Point origin = plotter.pos;
-    // // Let user draw line
-    // plotter.joystick(false);
-    // plotter.makePoint();
-    // // Save the position
-    // Point end = plotter.pos;
-    // // Serial.printf("end: (%f, %f)", end.x, end.y);
-    // // Move back
-    // plotter.moveTo(origin);
+  if (scale) {
+    plotter.makePoint();
+    // Save the position to drive back
+    Point origin = plotter.pos;
+    // Let user draw line
+    plotter.joystick(false);
+    plotter.makePoint();
+    // Save the position
+    Point end = plotter.pos;
+    // Serial.printf("end: (%f, %f)", end.x, end.y);
+    // Move back
+    plotter.moveTo(origin);
 
     // // Calculate degree and length
-    // float dx = end.x - origin.x;
-    // float dy = end.y - origin.y;
+    float dx = end.x - origin.x;
+    float dy = end.y - origin.y;
     // float degree = atan(dy/dx);
     // // Add 2π if degree negative
     // if (degree < 0) {
-      // degree += 2 * PI;
+    // / degree += 2 * PI;
     // }
-    // float length = sqrt(pow(dx, 2) + pow(dy, 2));
-    // svg.scale(length);
-  // }
+    float length = sqrt(pow(dx, 2) + pow(dy, 2));
+    svg.scale(length);
+  }
 
   // svg.rotate(degree);
   plotter.executeSVG(svg);
@@ -116,7 +116,7 @@ void readFromSD() {
         if (strncmp(extension, ".svg", 4) == 0) {
           Serial.printf("Drawing '%s' ...\n", name);
           CustomStream *sstream = new FileStream(f);
-          draw(sstream, false);
+          draw(sstream, true);
           Serial.printf("'%s' drawn!\n", name);
         } else {
           Serial.printf("Skipping '%s' (no '.svg' extension) ...\n", name);
