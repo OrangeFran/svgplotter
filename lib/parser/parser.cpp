@@ -201,6 +201,7 @@ std::string findPath(CustomStream *stream) {
 // Assumes svg is valid and does not check for validity
 SVG::SVG(CustomStream *stream) {
   this->stream = stream;
+  this->scaleFactor = 0;
   float *vB = findViewBox(this->stream);
   // Copy array
   for (int i = 0; i < 4; i++) {
@@ -265,14 +266,14 @@ bool SVG::pathAvailable() {
 std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
   std::string nextPath = findPath(this->stream);
   auto *parsedPath = followPath(nextPath);
-  // // Apply scaling
-  // if (this->scaleFactor != 0) {
-  //   for (int i = 0; i < parsedPath.size(); i++) {
-  //     for (int b = 0; b < parsedPath[i].second.size(); b++) {
-  //       parsedPath[i].second[b] *= this->scaleFactor;
-  //     }
-  //   }
-  // }
+  // Apply scaling
+  if (this->scaleFactor != 0) {
+    for (int i = 0; i < parsedPath->size(); i++) {
+      for (int b = 0; b < parsedPath->at(i).second.size(); b++) {
+        parsedPath->at(i).second[b] *= this->scaleFactor;
+      }
+    }
+  }
   return parsedPath;
 }
 

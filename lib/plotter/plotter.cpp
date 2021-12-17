@@ -43,9 +43,9 @@ void Plotter::executeSVG(SVG svg) {
     }
 
     // Execute path
-    for (int i = 0; i < res.size(); i++) {
+    for (int i = 0; i < res->size(); i++) {
       // Get the next element
-      std::pair<char, std::vector<float> > c = res[i];
+      std::pair<char, std::vector<float> > c = res->at(i);
 
       // Logging
       // // Clear line with 100 whitespaces
@@ -150,8 +150,8 @@ void Plotter::executeSVG(SVG svg) {
         case 'T':
           // TODO: Test
           // `P_1 = 2 * P_0 - P_old_1`
-           x1 = 2.0 * res[i - 1].second[2] - res[i - 1].second[0] + start.x;
-           y1 = - 2.0 * res[i - 1].second[3] + res[i - 1].second[1] + start.y;
+           x1 = 2.0 * res->at(i - 1).second[2] - res->at(i - 1).second[0] + start.x;
+           y1 = - 2.0 * res->at(i - 1).second[3] + res->at(i - 1).second[1] + start.y;
            x2 = c.second[0] + start.x;
            y2 = - c.second[1] + start.y;
           // Relative coordinates
@@ -196,8 +196,8 @@ void Plotter::executeSVG(SVG svg) {
         case 's':
         case 'S':
           // `P_1 = 2 * P_0 - P_old_2`
-          x1 = 2.0 * res[i - 1].second[4] - res[i - 1].second[2] + start.x;
-          y1 = - 2.0 * res[i - 1].second[5] + res[i - 1].second[3] + start.y;
+          x1 = 2.0 * res->at(i - 1).second[4] - res->at(i - 1).second[2] + start.x;
+          y1 = - 2.0 * res->at(i - 1).second[5] + res->at(i - 1).second[3] + start.y;
           x2 = c.second[0] + start.x;
           y2 = - c.second[1] + start.y;
           x3 = c.second[2] + start.x;
