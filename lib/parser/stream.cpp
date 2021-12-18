@@ -14,7 +14,3 @@ char StringStream::read() {
   this->str.erase(this->str.begin());
   return c;
 }
-
-bool StringStream::available() {
-  return (this->str.size() > 0);
-}

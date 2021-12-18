@@ -11,7 +11,6 @@ class FileStream: public CustomStream {
   public:
     FileStream(File);
     char read();
-    bool available();
 };
 
 #endif

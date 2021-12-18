@@ -36,8 +36,8 @@ void Plotter::executeSVG(SVG svg) {
   // Retrieve the vector with all of the commands + coordinates
   while (true) {
     auto *res = svg.parseNextPath();
-    // Check if path was available
-    if (!svg.pathAvailable()) {
+    // Check if all paths were read
+    if (res == NULL) {
       // Everything drawn
       break;
     }
@@ -209,5 +209,7 @@ void Plotter::executeSVG(SVG svg) {
           break;
       }
     }
+
+    delete res;
   }
 }
