@@ -19,9 +19,7 @@ Point::Point(float x, float y) {
 // Calculate the length of the string at
 // the point (x, y) with the law of Pythagoras
 float *Point::getStrings() {
-  // Keyword `static` makes sure that the array
-  // is not deleted (out of scope) after the return statement
-  static float position[2];
+  float *position = (float *)malloc(2 * sizeof(float));
   position[0] = sqrt(pow(boardWidth/2 + this->x, 2) + pow(boardHeight - this->y, 2));
   position[1] = sqrt(pow(boardWidth/2 - this->x, 2) + pow(boardHeight - this->y, 2));
   return position;
