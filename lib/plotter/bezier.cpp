@@ -25,6 +25,8 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
     y = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
     this->moveTo(Point(x, y));
   }
+
+  delay(100);
 }
 
 // `B(t) = (1 - t)^3 P_0 + 3t (1 - t)^2 P_1 + 3t^2 (1 - t) P_2 + t^3 P_3`
