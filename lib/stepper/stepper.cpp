@@ -54,7 +54,7 @@ void accelCallback(void *_motor) {
 
   float appliedAcceleration = motor->accel * accelDelay;
 
-  // Check if full acceleration can be applied
+  // Check if acceleration exceeds target speed
   if (round(motor->velocity + appliedAcceleration) > round(motor->target_velocity)) {
     motor->velocity = motor->target_velocity;
   } else {
@@ -64,7 +64,7 @@ void accelCallback(void *_motor) {
 
   int predictedSteps = round(motor->velocity * accelDelay);
   // If no step would be done, wait for the next acceleration 
-  if (predictedSteps < 1) {
+  if (predictedSteps == 0 && round(motor->velocity) != round(motor->target_velocity)) {
     return;
   }
 
@@ -73,14 +73,11 @@ void accelCallback(void *_motor) {
   // Serial.printf("Predicted steps: %d", predictedSteps);
 
   // Apply the velocity
-  // Serial.println("Applying frequency ...");
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index), (int)round(motor->velocity)); 
-  // The duty cycle does not have to be accurate to the point
-  // Delay of 2 microseconds = freq of 500000Hz
-  // Serial.println("Applying duty ...");
-  int dutyCycle = round((float)round(motor->velocity)/500000.0 * 16383.0);
-  // Use one if dutyCycle is too small
-  ledc_set_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(motor->index), dutyCycle == 0 ? 1 : dutyCycle);
+  // DutyCycle is not allowed to be less than 2, so we
+  // always round up
+  int dutyCycle = ceil((float)round(motor->velocity)/500000.0 * 16383.0);
+  ledc_set_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(motor->index), dutyCycle);
   ledc_update_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(motor->index)); 
 
   // Start a stop timer if
