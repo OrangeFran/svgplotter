@@ -143,9 +143,11 @@ void Plotter::executeSVG(SVG svg) {
         case 't':
         case 'T':
           // TODO: Test
-          // `P_1 = 2 * P_0 - P_old_1`
-           x1 = 2.0 * res->at(i - 1).second[2] - res->at(i - 1).second[0] + start.x;
-           y1 = - 2.0 * res->at(i - 1).second[3] + res->at(i - 1).second[1] + start.y;
+          // `P_1 = 2 * P_0 - P_old_-2`
+          auto old_c = res->at(i - 1);
+          int old_c_size = old_c.size();
+           x1 = 2.0 * old_c.second[old_c_size - 2] - old_c.second[old_c_size - 4] + start.x;
+           y1 = - 2.0 * old_c.second[old_c_size - 1] + old_c.second[old_c_size - 3] + start.y;
            x2 = c.second[0] + start.x;
            y2 = - c.second[1] + start.y;
           // Relative coordinates
@@ -185,9 +187,11 @@ void Plotter::executeSVG(SVG svg) {
         // https://www.inf.ed.ac.uk/teaching/courses/cg/d3/bezierJoin.html
         case 's':
         case 'S':
-          // `P_1 = 2 * P_0 - P_old_2`
-          x1 = 2.0 * res->at(i - 1).second[4] - res->at(i - 1).second[2] + start.x;
-          y1 = - 2.0 * res->at(i - 1).second[5] + res->at(i - 1).second[3] + start.y;
+          // `P_1 = 2 * P_0 - P_old_-2`
+          auto old_c = res->at(i - 1);
+          int old_c_size = old_c.size();
+          x1 = 2.0 * old_c.second[old_c_size - 2] - res->at(i - 1).second[old_c_size - 4] + start.x;
+          y1 = - 2.0 * res->at(i - 1).second[old_c_size - 1] + res->at(i - 1).second[old_c_size - 3] + start.y;
           x2 = c.second[0] + start.x;
           y2 = - c.second[1] + start.y;
           x3 = c.second[2] + start.x;
