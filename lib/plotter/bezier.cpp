@@ -35,28 +35,36 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
   float T = 0;
   float Tx, Ty;
   float mT, dTx, dTy;
+
   while (true) {
     // TODO: Check the derivative
     // Calculate velocity of bezier curve 
-    dTx = 2 * p2.x * t - 2 * p1.x * t + 2 * p1.x * (1 - t) - 2 * p0.x (1 - t)
-    dTy = 2 * p2.y * t - 2 * p1.y * t + 2 * p1.y * (1 - t) - 2 * p0.y (1 - t)
+    dTx = 2 * p2.x * T - 2 * p1.x * T + 2 * p1.x * (1 - T) - 2 * p0.x (1 - T)
+    dTy = 2 * p2.y * T - 2 * p1.y * T + 2 * p1.y * (1 - T) - 2 * p0.y (1 - T)
     mT = dTy / dTx;
     // Calculate the current point
-    Tx = pow((1.0 - t), 2) * p0.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
-    Ty = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
+    Tx = pow((1.0 - T), 2) * p0.x + 2.0 * T * (1.0 - T) * p1.x + pow(T, 2) * p2.x;
+    Ty = pow((1.0 - T), 2) * p0.y + 2.0 * T * (1.0 - T) * p1.y + pow(T, 2) * p2.y;
+
     // Try to approximate with threshold
     float tx, ty, m;
     while (true) {
+      t += 0.01;
       tx = pow((1.0 - t), 2) * p0.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
       ty = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
       m = (ty - Ty) / (tx - Tx);
-      if ((mT - m) < thresh && (mT - m) > (-thresh)) {
+
+      // Too much difference
+      if ((mT - m) > thresh || (mT - m) < (-thresh)) {
+        // If the first calculated point is already too inaccurate
+        // don't go back, because then t would be the same as last time 
+        t -= 0.01;
+        if (t == T) {
+          t += 0.01;
+        }
         T = t;
-        t = 1;
         break;
       }
-      // Split t and try again
-      t = (t - T) / 2
     }
 
     // Draw the newly calculated segment
@@ -95,32 +103,41 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
   Point p0 = this->pos;
   const float thresh = 0.1;
 
-  float t = 1;
+  float t = 0;
   float T = 0;
   float Tx, Ty;
   float mT, dTx, dTy;
+
   while (true) {
     // TODO: Check the derivative
     // Calculate velocity of bezier curve 
-    dTx = 3 * p3.x * pow(t, 2) - 3 * p2.x * pow(t, 2) + 6 * p2.x * (1 - t) * t - 6 * p1.x * (1 - t) * t + 3 * p1.x * pow((1 - t), 2) - 3 * p0.x * pow((1 - t), 2);
-    dTy = 3 * p3.y * pow(t, 2) - 3 * p2.y * pow(t, 2) + 6 * p2.y * (1 - t) * t - 6 * p1.y * (1 - t) * t + 3 * p1.y * pow((1 - t), 2) - 3 * p0.y * pow((1 - t), 2);
+    dTx = 3 * p3.x * pow(T, 2) - 3 * p2.x * pow(T, 2) + 6 * p2.x * (1 - T) * T - 6 * p1.x * (1 - T) * T + 3 * p1.x * pow((1 - T), 2) - 3 * p0.x * pow((1 - T), 2);
+    dTy = 3 * p3.y * pow(T, 2) - 3 * p2.y * pow(T, 2) + 6 * p2.y * (1 - T) * T - 6 * p1.y * (1 - T) * T + 3 * p1.y * pow((1 - T), 2) - 3 * p0.y * pow((1 - T), 2);
     mT = dTy / dTx;
     // Calculate the current point
-    Tx = pow((1.0 - t), 3) * p0.x + 3.0 * t * pow((1.0 - t), 2) * p1.x + 3.0 * pow(t, 2) * (1.0 - t) * p2.x + pow(t, 3) * p3.x;
-    Ty = pow((1.0 - t), 3) * p0.y + 3.0 * t * pow((1.0 - t), 2) * p1.y + 3.0 * pow(t, 2) * (1.0 - t) * p2.y + pow(t, 3) * p3.y;
-    // Try to approximate with threshold
+    Tx = pow((1.0 - T), 3) * p0.x + 3.0 * T * pow((1.0 - T), 2) * p1.x + 3.0 * pow(T, 2) * (1.0 - T) * p2.x + pow(T, 3) * p3.x;
+    Ty = pow((1.0 - T), 3) * p0.y + 3.0 * T * pow((1.0 - T), 2) * p1.y + 3.0 * pow(T, 2) * (1.0 - T) * p2.y + pow(T, 3) * p3.y;
+
+    // Try to approximate with threshold until difference too much
     float tx, ty, m;
     while (true) {
+      // Increase
+      t += 0.01; 
       tx = pow((1.0 - t), 3) * p0.x + 3.0 * t * pow((1.0 - t), 2) * p1.x + 3.0 * pow(t, 2) * (1.0 - t) * p2.x + pow(t, 3) * p3.x;
       ty = pow((1.0 - t), 3) * p0.y + 3.0 * t * pow((1.0 - t), 2) * p1.y + 3.0 * pow(t, 2) * (1.0 - t) * p2.y + pow(t, 3) * p3.y;
       m = (ty - Ty) / (tx - Tx);
-      if ((mT - m) < thresh && (mT - m) > (-thresh)) {
+      
+      // Too much difference
+      if ((mT - m) > thresh || (mT - m) < (-thresh)) {
+        // If the first calculated point is already too inaccurate
+        // don't go back, because then t would be the same as last time 
+        t -= 0.01;
+        if (t == T) {
+          t += 0.01;
+        }
         T = t;
-        t = 1;
         break;
       }
-      // Split t and try again
-      t = (t - T) / 2
     }
 
     // Draw the newly calculated segment
