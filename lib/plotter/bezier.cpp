@@ -50,9 +50,9 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
       tx = pow((1.0 - t), 2) * p0.x + 2.0 * t * (1.0 - t) * p1.x + pow(t, 2) * p2.x;
       ty = pow((1.0 - t), 2) * p0.y + 2.0 * t * (1.0 - t) * p1.y + pow(t, 2) * p2.y;
       m = (ty - Ty) / (tx - Tx);
-      if ((mT - m) < thresh) {
+      if ((mT - m) < thresh && (mT - m) > (-thresh)) {
         T = t;
-        t = 0;
+        t = 1;
         break;
       }
       // Split t and try again
@@ -114,9 +114,9 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
       tx = pow((1.0 - t), 3) * p0.x + 3.0 * t * pow((1.0 - t), 2) * p1.x + 3.0 * pow(t, 2) * (1.0 - t) * p2.x + pow(t, 3) * p3.x;
       ty = pow((1.0 - t), 3) * p0.y + 3.0 * t * pow((1.0 - t), 2) * p1.y + 3.0 * pow(t, 2) * (1.0 - t) * p2.y + pow(t, 3) * p3.y;
       m = (ty - Ty) / (tx - Tx);
-      if ((mT - m) < thresh) {
+      if ((mT - m) < thresh && (mT - m) > (-thresh)) {
         T = t;
-        t = 0;
+        t = 1;
         break;
       }
       // Split t and try again
