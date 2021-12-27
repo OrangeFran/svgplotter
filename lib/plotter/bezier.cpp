@@ -39,8 +39,8 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
   while (true) {
     // TODO: Check the derivative
     // Calculate velocity of bezier curve 
-    dTx = 2 * p2.x * T - 2 * p1.x * T + 2 * p1.x * (1 - T) - 2 * p0.x (1 - T)
-    dTy = 2 * p2.y * T - 2 * p1.y * T + 2 * p1.y * (1 - T) - 2 * p0.y (1 - T)
+    dTx = 2 * p2.x * T - 2 * p1.x * T + 2 * p1.x * (1 - T) - 2 * p0.x * (1 - T);
+    dTy = 2 * p2.y * T - 2 * p1.y * T + 2 * p1.y * (1 - T) - 2 * p0.y * (1 - T);
     mT = dTy / dTx;
     // Calculate the current point
     Tx = pow((1.0 - T), 2) * p0.x + 2.0 * T * (1.0 - T) * p1.x + pow(T, 2) * p2.x;
