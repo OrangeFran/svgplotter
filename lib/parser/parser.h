@@ -31,16 +31,17 @@ class SVG {
     CustomStream *stream;
     float viewBox[4];
     float scaleFactor;
-    // float rotation;
+    float rotation;
 
     // Constructor
     SVG(CustomStream *);
     bool pathAvailable();
     // Returns the next path
-    // Applies scaling
     std::vector<std::pair<char, std::vector<float> > > *parseNextPath(void);
-    // void setRotation(float);
-    void scale(float);
+    void setScaleFactor(float);
+    void setRotation(float);
+    // Apply them
+    void scaleAndRotatePath(std::vector<std::pair<char, std::vector<float> > > *);
 };
 
 float *findViewBox(CustomStream *);

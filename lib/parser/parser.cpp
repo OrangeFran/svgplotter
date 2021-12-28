@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <cmath>
 
 #include "parser.h"
 
@@ -123,7 +124,7 @@ std::string findPath(CustomStream *stream) {
   int i;
   char c;
   while (true) {
-    int i = stream->read();
+    i = stream->read();
     // Check if all characters are read
     if (i == -1) {
       break;
@@ -215,6 +216,7 @@ std::string findPath(CustomStream *stream) {
 SVG::SVG(CustomStream *stream) {
   this->stream = stream;
   this->scaleFactor = 0;
+  this->rotation = 0;
   float *vB = findViewBox(this->stream);
   // Copy array
   for (int i = 0; i < 4; i++) {
@@ -266,23 +268,123 @@ std::vector<std::pair<char, std::vector<float> > > *followPath(std::string path)
   return actions->size() == 0 ? NULL : actions;
 }
 
+void SVG::scaleAndRotatePath(std::vector<std::pair<char, std::vector<float> > > *path) {
+}
+
 // Return the next path as a vector of commands and coordinates
 // Before calling this function, make sure to see if there are commands left
 std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
   std::string nextPath = findPath(this->stream);
-  auto *parsedPath = followPath(nextPath);
-  // Apply scaling
-  if (parsedPath != NULL && this->scaleFactor != 0) {
-    for (int i = 0; i < parsedPath->size(); i++) {
-      for (int b = 0; b < parsedPath->at(i).second.size(); b++) {
-        parsedPath->at(i).second[b] *= this->scaleFactor;
+  auto parsedPath = followPath(nextPath);
+
+  if (parsedPath != NULL) {
+
+    float position[2] = {0, 0};
+    // Save values for faster access
+    float sin_r = sin(this->rotation);
+    float cos_r = cos(this->rotation);
+
+    for (auto c = parsedPath->begin(); c != parsedPath->end(); c++) {
+
+      if (this->scaleFactor != 0) {
+        for (int b = 0; b < c->second.size(); b++) {
+          c->second[b] *= this->scaleFactor;
+        }
+      }
+
+      // If relative, convert to absolute
+      if (c->first == tolower(c->first)) {
+        switch (c->first) {
+          // Commands with x and y coordinates 
+          case 'm':
+          case 'l':
+          case 'q':
+          case 't':
+          case 'c':
+          case 's':
+            for (int i = 0; i < c->second.size() / 2; i++) {
+              c->second[i * 2] += position[0];
+              c->second[i * 2 + 1] += position[1];
+            }
+            break;
+
+          // Commands with x or y coordinate
+          case 'v':
+            c->second[0] += position[0];
+            break;
+
+          case 'h':
+            c->second[1] += position[1];
+            break;
+
+          default:
+            break;
+          }
+        c->first = toupper(c->first);
+      }
+
+      // Rotation formulae (flipped axes):
+      //   -> x = sin(..) * x + cos(..) * y
+      //   -> y = cos(..) * x - sin(..) * y
+      switch(c->first) {
+        case 'M':
+        case 'L':
+        case 'T':
+          position[0] = c->second[0];
+          position[1] = c->second[1];
+          if (this->rotation != 0) {
+            c->second[0] = sin_r * c->second[0] + cos_r * c->second[1];
+            c->second[1] = cos_r * c->second[0] - sin_r * c->second[1];
+          }
+          break;
+
+        case 'V':
+          position[0] = c->second[0];
+          if (this->rotation != 0) {
+            c->second[0] = sin_r * c->second[0] + cos_r * position[1];
+          }
+          break;
+
+        case 'H':
+          position[1] = c->second[1];
+          if (this->rotation != 0) {
+            c->second[1] = cos_r * position[0] - sin_r * c->second[1];
+          }
+          break;
+
+        case 'Q':
+        case 'S':
+          position[0] = c->second[2];
+          position[1] = c->second[3];
+          if (this->rotation != 0) {
+            for (int i = 0; i < 2; i++) {
+              c->second[i * 2] = sin_r * c->second[i * 2] + cos_r * c->second[i * 2 + 1];
+              c->second[i * 2 + 1] = cos_r * c->second[i * 2] - sin_r * c->second[i * 2 + 1];
+            }
+          }
+          break;
+
+        case 'C':
+          position[0] = c->second[4];
+          position[1] = c->second[5];
+          if (this->rotation != 0) {
+            for (int i = 0; i < 3; i++) {
+              c->second[i * 2] = sin_r * c->second[i * 2] + cos_r * c->second[i * 2 + 1];
+              c->second[i * 2 + 1] = cos_r * c->second[i * 2] - sin_r * c->second[i * 2 + 1];
+            }
+          }
+          break;
+
+        default:
+          break;
       }
     }
   }
+
   return parsedPath;
 }
 
-void SVG::scale(float width) {
+void SVG::setScaleFactor(float width) {
   this->scaleFactor = width/this->viewBox[2];
   // Update viewBox
   for (int i = 0; i < 4; i++) {
@@ -290,14 +392,6 @@ void SVG::scale(float width) {
   }
 }
 
-// // This has to be done when executing the svg
-// void SVG::setRotation(float degree) {
-//   // // Update the coordinates
-//   // for (int i = 0; i < this->actions.size(); i++) {
-//   //   // Get the next element
-//   //   for (int b = 0; b < this->actions[i].second.size(); b++) {
-//   //     this->actions[i].second[b] *= factor;
-//   //   }
-//   // }
-//   this->rotation = degree;
-// }
+void SVG::setRotation(float degree) {
+  this->rotation = degree;
+}
