@@ -82,7 +82,7 @@ const char *findExtension(const char *name) {
   return extension;
 }
 
-void readFromSD() {
+void readFromSD(bool scale) {
   // Setup sd card
   // (https://www.instructables.com/Select-SD-Interface-for-ESP32/)
   // Pins: 13 (CS), 2 (MIS0), 14 (CLK), 15 (MOSI)
@@ -116,7 +116,7 @@ void readFromSD() {
         if (strncmp(extension, ".svg", 4) == 0) {
           Serial.printf("Drawing '%s' ...\n", name);
           CustomStream *sstream = new FileStream(f);
-          draw(sstream, true);
+          draw(sstream, scale);
           Serial.printf("'%s' drawn!\n", name);
         } else {
           Serial.printf("Skipping '%s' (no '.svg' extension) ...\n", name);
@@ -136,7 +136,7 @@ void setup() {
   delay(2000);
 
   // Start SD card reader
-  readFromSD();
+  readFromSD(false);
 }
 
 void loop() {}
