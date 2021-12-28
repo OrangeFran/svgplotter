@@ -72,7 +72,7 @@ void draw(CustomStream *stream, bool scale) {
 // Extract file extension
 // Ex. 'draw.svg' -> '.svg'
 const char *findExtension(const char *name) {
-  static const char *extension = (char *)malloc(sizeof(name));
+  const char *extension = (char *)malloc(sizeof(name));
   for (int i = 0; i < strlen(name); i++) {
     if (name[i] == '.') {
       extension = name + i;

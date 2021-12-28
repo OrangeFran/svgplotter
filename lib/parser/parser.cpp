@@ -23,7 +23,7 @@ float *findViewBox(CustomStream *stream) {
   enum ParserState state = PARSER_findTag;  // The current state
   bool escaped = false;                     // True if previous character was '\'
 
-  static float viewBox[4];
+  float *viewBox = (float *)malloc(4 * sizeof(float));
 
   char c;
   while (stream->available()) {
