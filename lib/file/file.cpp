@@ -5,6 +5,6 @@ FileStream::FileStream(File f) {
     this->file = f;
 }
 
-char FileStream::read() {
+int FileStream::read() {
     return this->file.read();
 }

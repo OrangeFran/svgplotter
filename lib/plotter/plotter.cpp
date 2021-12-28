@@ -7,9 +7,8 @@
 const float boardWidth = 1970.0;   // mm
 const float boardHeight = 1185.0;  // mm
 
-// Delay of 500 µs in sps: 2000Hz
-const float baseVelocity = 2000.0; // Steps per second
-const float baseAcceleration = 3000.0; // Steps per second per second
+const float baseVelocity = 1000.0; // Steps per second
+const float baseAcceleration = 2000.0; // Steps per second per second
 
 Point::Point(float x, float y) {
   this->x = x;
@@ -31,12 +30,13 @@ void Plotter::executeSVG(SVG svg) {
   Point start = this->pos;
 
   float x1, y1, x2, y2, x3, y3;
+  std::vector<std::pair<char, std::vector<float> > > *res;
   std::pair<char, std::vector<float> > c, old_c;
   int old_c_size;
 
   // Retrieve the vector with all of the commands + coordinates
   while (true) {
-    auto *res = svg.parseNextPath();
+    res = svg.parseNextPath();
     // Check if all paths were read
     if (res == NULL) {
       // Everything drawn
@@ -214,7 +214,5 @@ void Plotter::executeSVG(SVG svg) {
           break;
       }
     }
-
-    delete res;
   }
 }

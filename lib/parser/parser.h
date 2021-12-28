@@ -13,7 +13,7 @@
 class CustomStream {
   public:
     // Returns the next character
-    virtual char read() = 0;
+    virtual int read() = 0;
 };
 
 class StringStream: public CustomStream {
@@ -23,7 +23,7 @@ class StringStream: public CustomStream {
   public:
     StringStream(std::string);
     std::string getString();
-    char read();
+    int read();
 };
 
 class SVG {

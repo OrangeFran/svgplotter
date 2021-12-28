@@ -120,14 +120,16 @@ std::string findPath(CustomStream *stream) {
 
   std::string res = "";
 
+  int i;
   char c;
   while (true) {
-    c = stream->read();
+    int i = stream->read();
     // Check if all characters are read
-    if (c == -1) {
+    if (i == -1) {
       break;
     }
 
+    c = (char)i;
     if (escaped) {
       // Currently extracting value and previous char was '\' 
       // Treat is as a normal character 
@@ -163,6 +165,7 @@ std::string findPath(CustomStream *stream) {
       case PARSER_endTag:
         if (c == '>') {
           if (res != "") {
+            // Return result
             return res;
           }
           state = PARSER_findTag;
@@ -260,7 +263,7 @@ std::vector<std::pair<char, std::vector<float> > > *followPath(std::string path)
     curr = "";
   }
 
-  return actions;
+  return actions->size() == 0 ? NULL : actions;
 }
 
 // Return the next path as a vector of commands and coordinates

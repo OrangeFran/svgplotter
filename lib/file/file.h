@@ -10,7 +10,7 @@ class FileStream: public CustomStream {
 
   public:
     FileStream(File);
-    char read();
+    int read();
 };
 
 #endif
