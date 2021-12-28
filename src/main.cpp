@@ -57,7 +57,7 @@ void draw(CustomStream *stream, bool scale) {
     // / degree += 2 * PI;
     // }
     float length = sqrt(pow(dx, 2) + pow(dy, 2));
-    svg.scale(length);
+    svg.setScaleFactor(length);
   }
 
   // svg.rotate(degree);
