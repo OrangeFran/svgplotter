@@ -163,7 +163,7 @@ StepperMotor::StepperMotor(
     // Max duty for frequency of 2000Hz
     .duty = 14,
     // High point (0 = at the beginning)
-    .hpoint = 0,
+    .hpoint = 0x888888,
   };
   ledc_channel_config(&pwm_channel_args);
 
