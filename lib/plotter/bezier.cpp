@@ -60,7 +60,6 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
         // If the first calculated point is already too inaccurate
         // don't go back, because then t would be the same as last time 
         t -= 0.01;
-        Serial.printf("Found point to draw at %f!", t);
         if (t == T) {
           t += 0.01;
         }
@@ -69,11 +68,13 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
       }
 
       // Stop
-      if (t >= (float)1) {
+      if (t > (float)0.99) {
         T = 1.0;
         break;
       }
     }
+
+    Serial.printf("Drawing to %f ...\n", T);
 
     // Calculate the new point
     Tx = pow((1.0 - T), 2) * p0.x + 2.0 * T * (1.0 - T) * p1.x + pow(T, 2) * p2.x;
@@ -83,7 +84,7 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
     this->moveTo(Point(Tx, Ty));
 
     // Curve is finished
-    if (T == (float)1) {
+    if (T > (float)0.99) {
       break;
     }
   }
@@ -151,11 +152,13 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
       }
 
       // Stop
-      if (t >= (float)1) {
-        T = 1.0;
+      if (t > (float)0.99) {
+        T = 1;
         break;
       }
     }
+    
+    Serial.printf("Drawing to %f ...\n", T);
 
     // Calculate the new point
     Tx = pow((1.0 - T), 3) * p0.x + 3.0 * T * pow((1.0 - T), 2) * p1.x + 3.0 * pow(T, 2) * (1.0 - T) * p2.x + pow(T, 3) * p3.x;
@@ -165,7 +168,7 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
     this->moveTo(Point(Tx, Ty));
 
     // Curve is finished
-    if (T == (float)1) {
+    if (T > (float)0.99) {
       break;
     }
   }
