@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "plotter.h"
 
+const float thresh = 0.1;
+
 // Implementation of De Casteljau's algorithm
 // parametric function with `t` -> move t from 0 to 1
 
@@ -29,22 +31,21 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
   // delay(100);
 
   Point p0 = this->pos;  
-  const float thresh = 0.1;
 
   float t = 1;
   float T = 0;
   float Tx, Ty;
   float mT, dTx, dTy;
 
+  // Calculate the current point
+  Tx = pow((1.0 - T), 2) * p0.x + 2.0 * T * (1.0 - T) * p1.x + pow(T, 2) * p2.x;
+  Ty = pow((1.0 - T), 2) * p0.y + 2.0 * T * (1.0 - T) * p1.y + pow(T, 2) * p2.y;
+
   while (true) {
-    // TODO: Check the derivative
     // Calculate velocity of bezier curve 
     dTx = 2 * p2.x * T - 2 * p1.x * T + 2 * p1.x * (1 - T) - 2 * p0.x * (1 - T);
     dTy = 2 * p2.y * T - 2 * p1.y * T + 2 * p1.y * (1 - T) - 2 * p0.y * (1 - T);
     mT = dTy / dTx;
-    // Calculate the current point
-    Tx = pow((1.0 - T), 2) * p0.x + 2.0 * T * (1.0 - T) * p1.x + pow(T, 2) * p2.x;
-    Ty = pow((1.0 - T), 2) * p0.y + 2.0 * T * (1.0 - T) * p1.y + pow(T, 2) * p2.y;
 
     // Try to approximate with threshold
     float tx, ty, m;
@@ -59,19 +60,30 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
         // If the first calculated point is already too inaccurate
         // don't go back, because then t would be the same as last time 
         t -= 0.01;
+        Serial.printf("Found point to draw at %f!", t);
         if (t == T) {
           t += 0.01;
         }
         T = t;
         break;
       }
+
+      // Stop
+      if (t >= (float)1) {
+        T = 1.0;
+        break;
+      }
     }
 
+    // Calculate the new point
+    Tx = pow((1.0 - T), 2) * p0.x + 2.0 * T * (1.0 - T) * p1.x + pow(T, 2) * p2.x;
+    Ty = pow((1.0 - T), 2) * p0.y + 2.0 * T * (1.0 - T) * p1.y + pow(T, 2) * p2.y;
+
     // Draw the newly calculated segment
-    this->moveTo(Point(tx, ty));
+    this->moveTo(Point(Tx, Ty));
 
     // Curve is finished
-    if (T == 1) {
+    if (T == (float)1) {
       break;
     }
   }
@@ -101,22 +113,21 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
   // delay(100);
 
   Point p0 = this->pos;
-  const float thresh = 0.1;
 
   float t = 0;
   float T = 0;
   float Tx, Ty;
   float mT, dTx, dTy;
 
+  // Calculate the current point
+  Tx = pow((1.0 - T), 3) * p0.x + 3.0 * T * pow((1.0 - T), 2) * p1.x + 3.0 * pow(T, 2) * (1.0 - T) * p2.x + pow(T, 3) * p3.x;
+  Ty = pow((1.0 - T), 3) * p0.y + 3.0 * T * pow((1.0 - T), 2) * p1.y + 3.0 * pow(T, 2) * (1.0 - T) * p2.y + pow(T, 3) * p3.y;
+
   while (true) {
-    // TODO: Check the derivative
     // Calculate velocity of bezier curve 
     dTx = 3 * p3.x * pow(T, 2) - 3 * p2.x * pow(T, 2) + 6 * p2.x * (1 - T) * T - 6 * p1.x * (1 - T) * T + 3 * p1.x * pow((1 - T), 2) - 3 * p0.x * pow((1 - T), 2);
     dTy = 3 * p3.y * pow(T, 2) - 3 * p2.y * pow(T, 2) + 6 * p2.y * (1 - T) * T - 6 * p1.y * (1 - T) * T + 3 * p1.y * pow((1 - T), 2) - 3 * p0.y * pow((1 - T), 2);
     mT = dTy / dTx;
-    // Calculate the current point
-    Tx = pow((1.0 - T), 3) * p0.x + 3.0 * T * pow((1.0 - T), 2) * p1.x + 3.0 * pow(T, 2) * (1.0 - T) * p2.x + pow(T, 3) * p3.x;
-    Ty = pow((1.0 - T), 3) * p0.y + 3.0 * T * pow((1.0 - T), 2) * p1.y + 3.0 * pow(T, 2) * (1.0 - T) * p2.y + pow(T, 3) * p3.y;
 
     // Try to approximate with threshold until difference too much
     float tx, ty, m;
@@ -126,7 +137,7 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
       tx = pow((1.0 - t), 3) * p0.x + 3.0 * t * pow((1.0 - t), 2) * p1.x + 3.0 * pow(t, 2) * (1.0 - t) * p2.x + pow(t, 3) * p3.x;
       ty = pow((1.0 - t), 3) * p0.y + 3.0 * t * pow((1.0 - t), 2) * p1.y + 3.0 * pow(t, 2) * (1.0 - t) * p2.y + pow(t, 3) * p3.y;
       m = (ty - Ty) / (tx - Tx);
-      
+
       // Too much difference
       if ((mT - m) > thresh || (mT - m) < (-thresh)) {
         // If the first calculated point is already too inaccurate
@@ -138,13 +149,23 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
         T = t;
         break;
       }
+
+      // Stop
+      if (t >= (float)1) {
+        T = 1.0;
+        break;
+      }
     }
 
+    // Calculate the new point
+    Tx = pow((1.0 - T), 3) * p0.x + 3.0 * T * pow((1.0 - T), 2) * p1.x + 3.0 * pow(T, 2) * (1.0 - T) * p2.x + pow(T, 3) * p3.x;
+    Ty = pow((1.0 - T), 3) * p0.y + 3.0 * T * pow((1.0 - T), 2) * p1.y + 3.0 * pow(T, 2) * (1.0 - T) * p2.y + pow(T, 3) * p3.y;
+
     // Draw the newly calculated segment
-    this->moveTo(Point(tx, ty));
+    this->moveTo(Point(Tx, Ty));
 
     // Curve is finished
-    if (T == 1) {
+    if (T == (float)1) {
       break;
     }
   }
