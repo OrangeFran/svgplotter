@@ -4,12 +4,16 @@
 #include <vector>
 #include <string>
 
+// A custom class to allow the parser
+// to accept either a file or a string through
+// this custom stream class
+// Reason: the parser can be tested on the native
+// platform without requiring the File object from the
+// Arduino library
 class CustomStream {
   public:
     // Returns the next character
     virtual char read() = 0;
-    // Check if there are chars to read
-    virtual bool available() = 0;
 };
 
 class StringStream: public CustomStream {
@@ -20,7 +24,6 @@ class StringStream: public CustomStream {
     StringStream(std::string);
     std::string getString();
     char read();
-    bool available();
 };
 
 class SVG {

@@ -8,7 +8,3 @@ FileStream::FileStream(File f) {
 char FileStream::read() {
     return this->file.read();
 }
-
-bool FileStream::available() {
-    return this->file.available();
-}

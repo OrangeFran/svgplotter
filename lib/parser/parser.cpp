@@ -26,8 +26,13 @@ float *findViewBox(CustomStream *stream) {
   float *viewBox = (float *)malloc(4 * sizeof(float));
 
   char c;
-  while (stream->available()) {
+  while (true) {
     c = stream->read();
+    // Check if all characters are read
+    if (c == -1) {
+      break;
+    }
+
     if (escaped) {
       // Currently extracting value and previous char was '\' 
       // Treat is as a normal character 
@@ -116,8 +121,13 @@ std::string findPath(CustomStream *stream) {
   std::string res = "";
 
   char c;
-  while (stream->available()) {
+  while (true) {
     c = stream->read();
+    // Check if all characters are read
+    if (c == -1) {
+      break;
+    }
+
     if (escaped) {
       // Currently extracting value and previous char was '\' 
       // Treat is as a normal character 
@@ -215,12 +225,8 @@ SVG::SVG(CustomStream *stream) {
 std::vector<std::pair<char, std::vector<float> > > *followPath(std::string path) {
   int index = -1;
   std::string curr;
-
-  auto *actions = new std::vector<std::pair<char, std::vector<float> > >;
-
-  // // Clear the vector
-  // std::vector<std::pair<char, std::vector<float> > > empty;
-  // actions = empty;
+  auto *actions =
+    new std::vector<std::pair<char, std::vector<float> > >;
 
   for (char c: path) {
     // Arguments are seperated by spaces
@@ -257,17 +263,13 @@ std::vector<std::pair<char, std::vector<float> > > *followPath(std::string path)
   return actions;
 }
 
-bool SVG::pathAvailable() {
-  return this->stream->available();
-}
-
 // Return the next path as a vector of commands and coordinates
 // Before calling this function, make sure to see if there are commands left
 std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
   std::string nextPath = findPath(this->stream);
   auto *parsedPath = followPath(nextPath);
   // Apply scaling
-  if (this->scaleFactor != 0) {
+  if (parsedPath != NULL && this->scaleFactor != 0) {
     for (int i = 0; i < parsedPath->size(); i++) {
       for (int b = 0; b < parsedPath->at(i).second.size(); b++) {
         parsedPath->at(i).second[b] *= this->scaleFactor;
@@ -279,18 +281,10 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
 
 void SVG::scale(float width) {
   this->scaleFactor = width/this->viewBox[2];
-  // Serial.printf("Factor: %f\n", this->scaleFactor);
   // Update viewBox
   for (int i = 0; i < 4; i++) {
     this->viewBox[i] *= this->scaleFactor;
   }
-  // The coordinates get updated when they are read
-  // for (int i = 0; i < this->actions.size(); i++) {
-  //   // Get the next element
-  //   for (int b = 0; b < this->actions[i].second.size(); b++) {
-  //     this->actions[i].second[b] *= factor;
-  //   }
-  // }
 }
 
 // // This has to be done when executing the svg
