@@ -1,5 +1,8 @@
+#define _USE_MATH_DEFINES
+
 #include <vector>
 #include <string>
+#include <math.h>
 #include <unity.h>
 #include <stdio.h>
 
@@ -118,11 +121,42 @@ void test_parser_valid_parse_path_with_scale() {
 
   CustomStream *sstream = new StringStream(s);
   SVG svg = SVG(sstream);
-  svg.scale(100.0);
+  svg.setScaleFactor(100.0);
   auto *path = svg.parseNextPath();
 
   TEST_ASSERT_EQUAL_FLOAT(30.0, path->at(0).second[0]);
   TEST_ASSERT_EQUAL_FLOAT(80.0, path->at(0).second[1]);
+}
+
+void test_parser_valid_parse_path_relative_to_absolute() {
+  const std::string s =
+    // "<?xml version=\"1.0\" ?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+      "<path color=\"blue\" d=\"M10 10 l 10 10\">\n"
+    "</svg>";
+
+  CustomStream *sstream = new StringStream(s);
+  SVG svg = SVG(sstream);
+  auto *path = svg.parseNextPath();
+
+  TEST_ASSERT_EQUAL_FLOAT(20.0, path->at(1).second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(20.0, path->at(1).second[1]);
+}
+
+void test_parser_valid_parse_path_with_rotation() {
+  const std::string s =
+    // "<?xml version=\"1.0\" ?>\n"
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 500 500\">\n"
+      "<path color=\"blue\" d=\"M10 10\">\n"
+    "</svg>";
+
+  CustomStream *sstream = new StringStream(s);
+  SVG svg = SVG(sstream);
+  svg.setRotation(M_PI / 2.0);
+  auto *path = svg.parseNextPath();
+
+  TEST_ASSERT_EQUAL_FLOAT(10.0, path->at(0).second[0]);
+  TEST_ASSERT_EQUAL_FLOAT(-10.0, path->at(0).second[1]);
 }
 
 // Run tests on native os
@@ -137,6 +171,8 @@ int main() {
   RUN_TEST(test_parser_valid_parse_path_float);
   RUN_TEST(test_parser_valid_parse_path_no_space);
   RUN_TEST(test_parser_valid_parse_path_with_scale);
+  RUN_TEST(test_parser_valid_parse_path_with_rotation);
+  RUN_TEST(test_parser_valid_parse_path_relative_to_absolute);
   UNITY_END();
 }
 
