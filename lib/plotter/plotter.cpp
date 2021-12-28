@@ -33,6 +33,9 @@ void Plotter::executeSVG(SVG svg) {
   Point start = this->pos;
 
   float x1, y1, x2, y2, x3, y3;
+  std::pair<char, std::vector<float> > c, old_c;
+  int old_c_size;
+
   // Retrieve the vector with all of the commands + coordinates
   while (true) {
     auto *res = svg.parseNextPath();
@@ -45,7 +48,7 @@ void Plotter::executeSVG(SVG svg) {
     // Execute path
     for (int i = 0; i < res->size(); i++) {
       // Get the next element
-      std::pair<char, std::vector<float> > c = res->at(i);
+      c = res->at(i);
 
       Serial.printf("--> %c ", c.first);
       for (int i = 0; i < c.second.size(); i += 1) {
@@ -144,8 +147,8 @@ void Plotter::executeSVG(SVG svg) {
         case 'T':
           // TODO: Test
           // `P_1 = 2 * P_0 - P_old_-2`
-          auto old_c = res->at(i - 1);
-          int old_c_size = old_c.size();
+          old_c = res->at(i - 1);
+          old_c_size = old_c.second.size();
            x1 = 2.0 * old_c.second[old_c_size - 2] - old_c.second[old_c_size - 4] + start.x;
            y1 = - 2.0 * old_c.second[old_c_size - 1] + old_c.second[old_c_size - 3] + start.y;
            x2 = c.second[0] + start.x;
@@ -188,8 +191,8 @@ void Plotter::executeSVG(SVG svg) {
         case 's':
         case 'S':
           // `P_1 = 2 * P_0 - P_old_-2`
-          auto old_c = res->at(i - 1);
-          int old_c_size = old_c.size();
+          old_c = res->at(i - 1);
+          old_c_size = old_c.second.size();
           x1 = 2.0 * old_c.second[old_c_size - 2] - res->at(i - 1).second[old_c_size - 4] + start.x;
           y1 = - 2.0 * res->at(i - 1).second[old_c_size - 1] + res->at(i - 1).second[old_c_size - 3] + start.y;
           x2 = c.second[0] + start.x;
