@@ -283,6 +283,7 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
     // Save values for faster access
     float sin_r = sin(this->rotation);
     float cos_r = cos(this->rotation);
+    std::vector<float> c_cpy;
 
     for (auto c = parsedPath->begin(); c != parsedPath->end(); c++) {
 
@@ -323,6 +324,9 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
         c->first = toupper(c->first);
       }
 
+      // Make a copy for access to old values after modifying 
+      c_cpy = c->second;
+
       // Rotation formulae (flipped axes):
       //   -> x = sin(..) * x + cos(..) * y
       //   -> y = cos(..) * x - sin(..) * y
@@ -333,22 +337,22 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
           position[0] = c->second[0];
           position[1] = c->second[1];
           if (this->rotation != 0) {
-            c->second[0] = sin_r * c->second[0] + cos_r * c->second[1];
-            c->second[1] = cos_r * c->second[0] - sin_r * c->second[1];
+            c->second[0] = sin_r * c_cpy[0] + cos_r * c_cpy[1];
+            c->second[1] = cos_r * c_cpy[0] - sin_r * c_cpy[1];
           }
           break;
 
         case 'V':
           position[0] = c->second[0];
           if (this->rotation != 0) {
-            c->second[0] = sin_r * c->second[0] + cos_r * position[1];
+            c->second[0] = sin_r * c_cpy[0] + cos_r * c_cpy[1];
           }
           break;
 
         case 'H':
           position[1] = c->second[1];
           if (this->rotation != 0) {
-            c->second[1] = cos_r * position[0] - sin_r * c->second[1];
+            c->second[1] = cos_r * c_cpy[0] - sin_r * c_cpy[1];
           }
           break;
 
@@ -358,8 +362,8 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
           position[1] = c->second[3];
           if (this->rotation != 0) {
             for (int i = 0; i < 2; i++) {
-              c->second[i * 2] = sin_r * c->second[i * 2] + cos_r * c->second[i * 2 + 1];
-              c->second[i * 2 + 1] = cos_r * c->second[i * 2] - sin_r * c->second[i * 2 + 1];
+              c->second[i * 2] = sin_r * c_cpy[i * 2] + cos_r * c_cpy[i * 2 + 1];
+              c->second[i * 2 + 1] = cos_r * c_cpy[i * 2] - sin_r * c_cpy[i * 2 + 1];
             }
           }
           break;
@@ -369,8 +373,8 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
           position[1] = c->second[5];
           if (this->rotation != 0) {
             for (int i = 0; i < 3; i++) {
-              c->second[i * 2] = sin_r * c->second[i * 2] + cos_r * c->second[i * 2 + 1];
-              c->second[i * 2 + 1] = cos_r * c->second[i * 2] - sin_r * c->second[i * 2 + 1];
+              c->second[i * 2] = sin_r * c_cpy[i * 2] + cos_r * c_cpy[i * 2 + 1];
+              c->second[i * 2 + 1] = cos_r * c_cpy[i * 2] - sin_r * c_cpy[i * 2 + 1];
             }
           }
           break;
