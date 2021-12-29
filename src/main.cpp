@@ -48,16 +48,19 @@ void draw(CustomStream *stream, bool scale) {
     // Move back
     plotter.moveTo(origin);
 
-    // // Calculate degree and length
+    // Calculate scaling 
     float dx = end.x - origin.x;
     float dy = end.y - origin.y;
-    // float degree = atan(dy/dx);
-    // // Add 2π if degree negative
-    // if (degree < 0) {
-    // / degree += 2 * PI;
-    // }
     float length = sqrt(pow(dx, 2) + pow(dy, 2));
     svg.setScaleFactor(length/svg.viewBox[2]);
+
+    // Calculate rotation degree
+    float degree = atan(dy/dx);
+    // Add π if dx negative (for 2. and 3. quadrant)
+    if (dx < 0) {
+      degree += PI;
+    }
+    svg.setRotation(degree);
   }
 
   // svg.rotate(degree);
