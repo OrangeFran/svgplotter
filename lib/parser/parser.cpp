@@ -384,8 +384,8 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
   return parsedPath;
 }
 
-void SVG::setScaleFactor(float width) {
-  this->scaleFactor = width/this->viewBox[2];
+void SVG::setScaleFactor(float factor) {
+  this->scaleFactor = factor;
   // Update viewBox
   for (int i = 0; i < 4; i++) {
     this->viewBox[i] *= this->scaleFactor;
