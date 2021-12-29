@@ -18,6 +18,7 @@ int main() {
   RUN_TEST(test_parser_valid_parse_path_with_scale);
   RUN_TEST(test_parser_valid_parse_path_with_rotation);
   RUN_TEST(test_parser_valid_parse_path_relative_to_absolute);
+  RUN_TEST(test_parser_valid_parse_path_with_rotation_scale_and_to_absolute);
   UNITY_END();
 }
 
