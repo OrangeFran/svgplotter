@@ -8,7 +8,7 @@ const float boardWidth = 1970.0;   // mm
 const float boardHeight = 1185.0;  // mm
 
 const float baseVelocity = 1000.0; // Steps per second
-const float baseAcceleration = 2000.0; // Steps per second per second
+const float baseAcceleration = 1000.0; // Steps per second per second
 
 Point::Point(float x, float y) {
   this->x = x;
@@ -73,23 +73,23 @@ void Plotter::executeSVG(SVG svg) {
           // this->moveTo(Point(x1, y1));
           break;
 
-        // Horizontal line
-        case 'H':
-           x1 = c.second[0] + start.x;
-           y1 = this->pos.y;
-          this->pen.penDown();
-          this->splitMove(Point(x1, y1));
-          // this->moveTo(Point(x1, y1));
-          break;
+        // // Horizontal line
+        // case 'H':
+        //    x1 = c.second[0] + start.x;
+        //    y1 = this->pos.y;
+        //   this->pen.penDown();
+        //   this->splitMove(Point(x1, y1));
+        //   // this->moveTo(Point(x1, y1));
+        //   break;
 
-        // Vertical line
-        case 'V':
-           x1 = this->pos.x;
-           y1 = - c.second[0] + start.y;
-          this->pen.penDown();
-          this->splitMove(Point(x1, y1));
-          // this->moveTo(Point(x1, y1));
-          break;
+        // // Vertical line
+        // case 'V':
+        //    x1 = this->pos.x;
+        //    y1 = - c.second[0] + start.y;
+        //   this->pen.penDown();
+        //   this->splitMove(Point(x1, y1));
+        //   // this->moveTo(Point(x1, y1));
+        //   break;
 
         // Close path
         case 'Z':
