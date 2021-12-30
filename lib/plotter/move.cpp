@@ -19,9 +19,8 @@ void Plotter::moveTo(Point p) {
 
   // The velocity for the shorter distance will
   // be a fraction of the base velocity of the longer distance
-  int velocityS1, velocityS2 = 0;
-  int accelerationS1, accelerationS2 = 0;
-  // int delayTimeS1, delayTimeS2 = 0;
+  int velocityS1 = 0, velocityS2 = 0;
+  int accelerationS1 = 0, accelerationS2 = 0;
 
   // Special cases
   if (stepsS1 == 0 && stepsS2 == 0) {
@@ -61,7 +60,8 @@ void Plotter::moveTo(Point p) {
       velocityS1 = baseVelocity;
       accelerationS1 = baseAcceleration;
       velocityS2 = round((float)stepsS2/(float)stepsS1 * baseVelocity);
-      if (velocityS1 == 0) {
+      // Ledc can't produce frequency of 1 Hz without special configuration
+      if (round(velocityS1) < 2) {
         this->stepper2.detachPin();
         for (int i = 0; i < stepsS2; i++) {
           this->stepper2.step();
@@ -75,13 +75,13 @@ void Plotter::moveTo(Point p) {
       velocityS2 = baseVelocity;
       accelerationS2 = baseAcceleration;
       velocityS1 = round((float)stepsS1/(float)stepsS2 * baseVelocity);
-      if (velocityS1 == 0) {
+      // Ledc can't produce frequency of 1 Hz without special configuration
+      if (round(velocityS1) < 2) {
         this->stepper1.detachPin();
         for (int i = 0; i < stepsS1; i++) {
           this->stepper1.step();
         }
         this->stepper1.attachPin();
-        stepsS1 = 0;
       } else {
         accelerationS1 = round((float)velocityS1/(float)velocityS2 * baseAcceleration);
       }
@@ -123,11 +123,10 @@ void Plotter::moveTo(Point p) {
     if (next_alarm == -1) {
       break;
     };
-    delayMicroseconds(1000);
   }
 
   // // Cautionary waiting
-  // delay(100);
+  delay(100);
 
   // Update the position
   this->pos = p;
@@ -147,8 +146,10 @@ void Plotter::splitMove(Point p) {
   float length = sqrt(pow(diffs[0], 2) + pow(diffs[1], 2));
 
   // Split a distance into 20mm pieces
-  int accuracy = round(length/20);
+  int accuracy = ceil(length/20.0);
   float increase = 1.0/(float)accuracy;
+
+  Serial.printf("Acc: %d, inc: %f\n", accuracy, increase);
 
   float t = 0.0;
   for (int i = 0; i < accuracy; i++) {
@@ -157,6 +158,4 @@ void Plotter::splitMove(Point p) {
     y = start.y + t * diffs[1];
     this->moveTo(Point(x, y));
   }
-
-  delay(100);
 }
