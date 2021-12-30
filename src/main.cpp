@@ -25,7 +25,7 @@ Plotter plotter = {
   .pen =  pen,
 };
 
-void draw(CustomStream *stream, bool transoform) {
+void draw(CustomStream *stream, bool transform) {
   // Wake motors up
   setMotorSleep(false);
   // Make sure the pen is up

@@ -149,8 +149,6 @@ void Plotter::splitMove(Point p) {
   int accuracy = ceil(length/20.0);
   float increase = 1.0/(float)accuracy;
 
-  Serial.printf("Acc: %d, inc: %f\n", accuracy, increase);
-
   float t = 0.0;
   for (int i = 0; i < accuracy; i++) {
     t += increase;

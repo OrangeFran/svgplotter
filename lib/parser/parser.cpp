@@ -287,12 +287,6 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
 
     for (auto c = parsedPath->begin(); c != parsedPath->end(); c++) {
 
-      if (this->scaleFactor != 0) {
-        for (int b = 0; b < c->second.size(); b++) {
-          c->second[b] *= this->scaleFactor;
-        }
-      }
-
       // Convert H and V to Ls
       // Convert relative to absolute
       switch (c->first) {
@@ -331,7 +325,6 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
           break;
       }
       
-
       // Make a copy for access to old values after modifying 
       c_cpy = c->second;
 
@@ -352,44 +345,11 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
         }
       }
 
-      // switch(c->first) {
-      //   case 'M':
-      //   case 'L':
-      //   case 'T':
-      //     position[0] = c->second[0];
-      //     position[1] = c->second[1];
-      //     if (this->rotation != 0) {
-      //       c->second[0] = sin_r * c_cpy[0] + cos_r * c_cpy[1];
-      //       c->second[1] = cos_r * c_cpy[0] - sin_r * c_cpy[1];
-      //     }
-      //     break;
-
-      //   case 'Q':
-      //   case 'S':
-      //     position[0] = c->second[2];
-      //     position[1] = c->second[3];
-      //     if (this->rotation != 0) {
-      //       for (int i = 0; i < 2; i++) {
-      //         c->second[i * 2] = sin_r * c_cpy[i * 2] + cos_r * c_cpy[i * 2 + 1];
-      //         c->second[i * 2 + 1] = cos_r * c_cpy[i * 2] - sin_r * c_cpy[i * 2 + 1];
-      //       }
-      //     }
-      //     break;
-
-      //   case 'C':
-      //     position[0] = c->second[4];
-      //     position[1] = c->second[5];
-      //     if (this->rotation != 0) {
-      //       for (int i = 0; i < 3; i++) {
-      //         c->second[i * 2] = sin_r * c_cpy[i * 2] + cos_r * c_cpy[i * 2 + 1];
-      //         c->second[i * 2 + 1] = cos_r * c_cpy[i * 2] - sin_r * c_cpy[i * 2 + 1];
-      //       }
-      //     }
-      //     break;
-
-      //   default:
-      //     break;
-      // }
+      if (this->scaleFactor != 0) {
+        for (int b = 0; b < c->second.size(); b++) {
+          c->second[b] *= this->scaleFactor;
+        }
+      }
     }
   }
 

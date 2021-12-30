@@ -79,7 +79,7 @@ void Plotter::bezierQuadratic(Point p1, Point p2) {
     Ty = pow((1.0 - T), 2) * p0.y + 2.0 * T * (1.0 - T) * p1.y + pow(T, 2) * p2.y;
 
     // Draw the newly calculated segment
-    this->moveTo(Point(Tx, Ty));
+    this->splitMove(Point(Tx, Ty));
 
     // Curve is finished
     if (T > (float)0.99) {
@@ -161,7 +161,7 @@ void Plotter::bezierCubic(Point p1, Point p2, Point p3) {
     Ty = pow((1.0 - T), 3) * p0.y + 3.0 * T * pow((1.0 - T), 2) * p1.y + 3.0 * pow(T, 2) * (1.0 - T) * p2.y + pow(T, 3) * p3.y;
 
     // Draw the newly calculated segment
-    this->moveTo(Point(Tx, Ty));
+    this->splitMove(Point(Tx, Ty));
 
     // Curve is finished
     if (T > (float)0.99) {

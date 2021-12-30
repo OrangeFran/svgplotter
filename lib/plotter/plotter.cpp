@@ -72,24 +72,6 @@ void Plotter::executeSVG(SVG svg) {
           this->splitMove(Point(x1, y1));
           break;
 
-        // // Horizontal line
-        // case 'H':
-        //    x1 = c.second[0] + start.x;
-        //    y1 = this->pos.y;
-        //   this->pen.penDown();
-        //   this->splitMove(Point(x1, y1));
-        //   // this->moveTo(Point(x1, y1));
-        //   break;
-
-        // // Vertical line
-        // case 'V':
-        //    x1 = this->pos.x;
-        //    y1 = - c.second[0] + start.y;
-        //   this->pen.penDown();
-        //   this->splitMove(Point(x1, y1));
-        //   // this->moveTo(Point(x1, y1));
-        //   break;
-
         // Close path
         case 'Z':
           // Point `start` saved in the beginning
