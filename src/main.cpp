@@ -25,7 +25,7 @@ Plotter plotter = {
   .pen =  pen,
 };
 
-void draw(CustomStream *stream, bool scale) {
+void draw(CustomStream *stream, bool transoform) {
   // Wake motors up
   setMotorSleep(false);
   // Make sure the pen is up
@@ -35,7 +35,7 @@ void draw(CustomStream *stream, bool scale) {
   SVG svg = SVG(stream);
 
   plotter.joystick(false);
-  if (scale) {
+  if (transform) {
     plotter.makePoint();
     // Save the position to drive back
     Point origin = plotter.pos;
@@ -44,13 +44,14 @@ void draw(CustomStream *stream, bool scale) {
     plotter.makePoint();
     // Save the position
     Point end = plotter.pos;
-    // Serial.printf("end: (%f, %f)", end.x, end.y);
     // Move back
     plotter.moveTo(origin);
+    plotter.makePoint();
 
-    // Calculate scaling 
     float dx = end.x - origin.x;
     float dy = end.y - origin.y;
+
+    // Calculate scaling 
     float length = sqrt(pow(dx, 2) + pow(dy, 2));
     svg.setScaleFactor(length/svg.viewBox[2]);
 
@@ -63,7 +64,6 @@ void draw(CustomStream *stream, bool scale) {
     svg.setRotation(degree);
   }
 
-  // svg.rotate(degree);
   plotter.executeSVG(svg);
 
   // Return to start and set motors to sleep
@@ -85,7 +85,7 @@ const char *findExtension(const char *name) {
   return extension;
 }
 
-void readFromSD(bool scale) {
+void readFromSD(bool transform) {
   // Setup sd card
   // (https://www.instructables.com/Select-SD-Interface-for-ESP32/)
   // Pins: 13 (CS), 2 (MIS0), 14 (CLK), 15 (MOSI)
@@ -119,7 +119,7 @@ void readFromSD(bool scale) {
         if (strncmp(extension, ".svg", 4) == 0) {
           Serial.printf("Drawing '%s' ...\n", name);
           CustomStream *sstream = new FileStream(f);
-          draw(sstream, scale);
+          draw(sstream, transform);
           Serial.printf("'%s' drawn!\n", name);
         } else {
           Serial.printf("Skipping '%s' (no '.svg' extension) ...\n", name);
@@ -139,7 +139,7 @@ void setup() {
   delay(2000);
 
   // Start SD card reader
-  readFromSD(false);
+  readFromSD(true);
 }
 
 void loop() {}
