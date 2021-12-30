@@ -70,7 +70,6 @@ void Plotter::executeSVG(SVG svg) {
            y1 = - c.second[1] + start.y;
           this->pen.penDown();
           this->splitMove(Point(x1, y1));
-          // this->moveTo(Point(x1, y1));
           break;
 
         // // Horizontal line
