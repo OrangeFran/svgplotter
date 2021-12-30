@@ -4,6 +4,7 @@
 void test_parser_valid_parse_path_with_scale();
 void test_parser_valid_parse_path_with_rotation();
 void test_parser_valid_parse_path_relative_to_absolute();
+void test_parser_valid_parse_path_from_v_h_to_l();
 void test_parser_valid_parse_path_with_rotation_scale_and_to_absolute();
 
 #endif
