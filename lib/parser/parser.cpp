@@ -281,8 +281,8 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
 
     float position[2] = {0, 0};
     // Save values for faster access
-    float sin_r = sin(this->rotation);
-    float cos_r = cos(this->rotation);
+    float sin_r = sin(-this->rotation);
+    float cos_r = cos(-this->rotation);
     std::vector<float> c_cpy;
 
     for (auto c = parsedPath->begin(); c != parsedPath->end(); c++) {
@@ -293,95 +293,103 @@ std::vector<std::pair<char, std::vector<float> > > *SVG::parseNextPath() {
         }
       }
 
-      // If relative, convert to absolute
-      if (c->first == tolower(c->first)) {
-        switch (c->first) {
-          // Commands with x and y coordinates 
-          case 'm':
-          case 'l':
-          case 'q':
-          case 't':
-          case 'c':
-          case 's':
-            for (int i = 0; i < c->second.size() / 2; i++) {
-              c->second[i * 2] += position[0];
-              c->second[i * 2 + 1] += position[1];
-            }
-            break;
-
-          // Commands with x or y coordinate
-          case 'v':
-            c->second[0] += position[0];
-            break;
-
-          case 'h':
-            c->second[1] += position[1];
-            break;
-
-          default:
-            break;
+      // Convert H and V to Ls
+      // Convert relative to absolute
+      switch (c->first) {
+        // Commands with x and y coordinates 
+        case 'm':
+        case 'l':
+        case 'q':
+        case 't':
+        case 'c':
+        case 's':
+        case 'z':
+          for (int i = 0; i < c->second.size() / 2; i++) {
+            c->second[i * 2] += position[0];
+            c->second[i * 2 + 1] += position[1];
           }
-        c->first = toupper(c->first);
-      }
-
-      // Make a copy for access to old values after modifying 
-      c_cpy = c->second;
-
-      // Rotation formulae (flipped axes):
-      //   -> x = sin(..) * x + cos(..) * y
-      //   -> y = cos(..) * x - sin(..) * y
-      switch(c->first) {
-        case 'M':
-        case 'L':
-        case 'T':
-          position[0] = c->second[0];
-          position[1] = c->second[1];
-          if (this->rotation != 0) {
-            c->second[0] = sin_r * c_cpy[0] + cos_r * c_cpy[1];
-            c->second[1] = cos_r * c_cpy[0] - sin_r * c_cpy[1];
-          }
+          c->first = toupper(c->first);
           break;
 
+        // Commands with x or y coordinate
+        // Need to be converted to L commands
+        case 'v':
+          c->second[0] += position[1];
         case 'V':
-          position[0] = c->second[0];
-          if (this->rotation != 0) {
-            c->second[0] = sin_r * c_cpy[0] + cos_r * c_cpy[1];
-          }
+          c->first = 'L';
+          c->second.insert(c->second.begin(), position[0]);
           break;
 
+        case 'h':
+          c->second[0] += position[0];
         case 'H':
-          position[1] = c->second[1];
-          if (this->rotation != 0) {
-            c->second[1] = cos_r * c_cpy[0] - sin_r * c_cpy[1];
-          }
-          break;
-
-        case 'Q':
-        case 'S':
-          position[0] = c->second[2];
-          position[1] = c->second[3];
-          if (this->rotation != 0) {
-            for (int i = 0; i < 2; i++) {
-              c->second[i * 2] = sin_r * c_cpy[i * 2] + cos_r * c_cpy[i * 2 + 1];
-              c->second[i * 2 + 1] = cos_r * c_cpy[i * 2] - sin_r * c_cpy[i * 2 + 1];
-            }
-          }
-          break;
-
-        case 'C':
-          position[0] = c->second[4];
-          position[1] = c->second[5];
-          if (this->rotation != 0) {
-            for (int i = 0; i < 3; i++) {
-              c->second[i * 2] = sin_r * c_cpy[i * 2] + cos_r * c_cpy[i * 2 + 1];
-              c->second[i * 2 + 1] = cos_r * c_cpy[i * 2] - sin_r * c_cpy[i * 2 + 1];
-            }
-          }
+          c->first = 'L';
+          c->second.push_back(position[1]);
           break;
 
         default:
           break;
       }
+      
+
+      // Make a copy for access to old values after modifying 
+      c_cpy = c->second;
+
+      int vec_size = c->second.size();
+
+      // The last to coordinates resemble the new position
+      position[0] = c_cpy[vec_size - 2];
+      position[1] = c_cpy[vec_size - 1];
+
+      // Rotation formulae (flipped axes) (clockwise):
+      // https://en.wikipedia.org/wiki/Rotation_matrix#Non-standard_orientation_of_the_coordinate_system
+      //   -> x = cos(..) * x - sin(..) * y
+      //   -> y = sin(..) * x + cos(..) * y
+      if (this->rotation != 0) {
+        for (int i = 0; i < vec_size / 2; i++) {
+          c->second[i * 2] = cos_r * c_cpy[i * 2] - sin_r * c_cpy[i * 2 + 1];
+          c->second[i * 2 + 1] = sin_r * c_cpy[i * 2] + cos_r * c_cpy[i * 2 + 1];
+        }
+      }
+
+      // switch(c->first) {
+      //   case 'M':
+      //   case 'L':
+      //   case 'T':
+      //     position[0] = c->second[0];
+      //     position[1] = c->second[1];
+      //     if (this->rotation != 0) {
+      //       c->second[0] = sin_r * c_cpy[0] + cos_r * c_cpy[1];
+      //       c->second[1] = cos_r * c_cpy[0] - sin_r * c_cpy[1];
+      //     }
+      //     break;
+
+      //   case 'Q':
+      //   case 'S':
+      //     position[0] = c->second[2];
+      //     position[1] = c->second[3];
+      //     if (this->rotation != 0) {
+      //       for (int i = 0; i < 2; i++) {
+      //         c->second[i * 2] = sin_r * c_cpy[i * 2] + cos_r * c_cpy[i * 2 + 1];
+      //         c->second[i * 2 + 1] = cos_r * c_cpy[i * 2] - sin_r * c_cpy[i * 2 + 1];
+      //       }
+      //     }
+      //     break;
+
+      //   case 'C':
+      //     position[0] = c->second[4];
+      //     position[1] = c->second[5];
+      //     if (this->rotation != 0) {
+      //       for (int i = 0; i < 3; i++) {
+      //         c->second[i * 2] = sin_r * c_cpy[i * 2] + cos_r * c_cpy[i * 2 + 1];
+      //         c->second[i * 2 + 1] = cos_r * c_cpy[i * 2] - sin_r * c_cpy[i * 2 + 1];
+      //       }
+      //     }
+      //     break;
+
+      //   default:
+      //     break;
+      // }
     }
   }
 
