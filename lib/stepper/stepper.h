@@ -19,11 +19,12 @@ extern const int stepPins[2];
 typedef struct Motor {
   int index; // Left motor -> 0, right motor -> 1
   float velocity; // Steps per second (= Hz)
+  float target_velocity;
+  float accel; 
+  int timeLastCall;
   esp_timer_handle_t accel_timer;
   esp_timer_handle_t stop_timer;
   int stepsToDo;
-  float target_velocity;
-  float accel; 
   // Constructor
   Motor(int);
 } Motor;

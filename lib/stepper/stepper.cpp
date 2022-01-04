@@ -10,7 +10,7 @@ const float perstep = 20.0 * PI / (200.0 * 32.0);
                       // 0.009817477;
 
 // Accelerate every tenth of a second
-const float accelDelay = 0.2;
+const float accelDelay = 0.1;
 
 // Global turned on state of motors
 bool motorState = false;
@@ -52,6 +52,13 @@ void accelCallback(void *_motor) {
   Motor *motor = (Motor *)_motor;
   ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
+  int difference = esp_timer_get_time() - motor->timeLastCall;
+  Serial.printf("Difference: %d", difference);
+
+  // Update steps done
+  if (round(motor->velocity) >= 2) {
+    motor->stepsToDo -= ceil(motor->velocity * difference/1000000.0);
+  }
 
   float appliedAcceleration = motor->accel * accelDelay;
 
@@ -68,7 +75,6 @@ void accelCallback(void *_motor) {
   int predictedSteps = round(velocityRounded * accelDelay);
   // If no step would be done, wait for the next acceleration 
   if (velocityRounded < 2) {
-    Serial.println("X");
     return;
   }
 
@@ -78,8 +84,7 @@ void accelCallback(void *_motor) {
 
   // Apply the velocity
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index), velocityRounded); 
-  // DutyCycle is not allowed to be less than 2, so we
-  // always round up
+  // dutyCycle should not be less than 2, so we always round up
   int dutyCycle = ceil((float)velocityRounded/500000.0 * 65535.0);
   ledc_set_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(motor->index), dutyCycle);
   ledc_update_duty(LEDC_HIGH_SPEED_MODE, CHANNEL_I(motor->index)); 
@@ -89,17 +94,19 @@ void accelCallback(void *_motor) {
   // -> or the plotter is fully accelerated
   if (motor->stepsToDo <= predictedSteps || velocityRounded == round(motor->target_velocity)) {
     // Calculate the remaining time
-    // Serial.println("Calculating delay ...");
     int delay = round((float)(motor->stepsToDo)/(float)velocityRounded * 1000000.0);
     motor->stepsToDo = 0;
     // Stop the acceleration timer and start the stop timer
     esp_timer_stop(motor->accel_timer);
     esp_timer_start_once(motor->stop_timer, delay);
-  } else {
-    // Else calculate steps done until next callback 
-    motor->stepsToDo -= predictedSteps;
   }
+  // else {
+  //   // Else calculate steps done until next callback 
+  //   motor->stepsToDo -= predictedSteps;
+  // }
+
   // Resume the PWM signal
+  motor->timeLastCall = esp_timer_get_time();
   ledc_timer_resume(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
 }
 
@@ -167,7 +174,8 @@ StepperMotor::StepperMotor(
     // Max duty for frequency of 1000Hz
     .duty = 16,
     // High point (0 = at the beginning)
-    .hpoint = 0x888888,
+    // .hpoint = 0x888888,
+    .hpoint = 0x000000,
   };
   ledc_channel_config(&pwm_channel_args);
 
@@ -221,6 +229,7 @@ void StepperMotor::doSteps(float t_velocity, float accel, int steps) {
     // Start the accel timer (1s (10 x 0.1s))
     // The accel timer will automatically start
     // the stop timer after fully accelerating
+    this->motor->timeLastCall = esp_timer_get_time();
     esp_timer_start_periodic(this->motor->accel_timer, 1000000 * accelDelay);
   }
 }
