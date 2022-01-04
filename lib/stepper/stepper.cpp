@@ -53,14 +53,15 @@ void accelCallback(void *_motor) {
   ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
   ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
   int difference = esp_timer_get_time() - motor->timeLastCall;
-  // Serial.printf("Difference: %d", difference);
 
   // Update steps done
   if (round(motor->velocity) >= 2) {
-    // Serial.printf("Velocity: %f, difference: %d ...\n", motor->velocity, difference);
     int steps = ceil(round(motor->velocity) * difference/1000000.0);
     motor->stepsToDo -= steps;
-    // Serial.printf("Steps done: %d, todo: %d\n", steps, motor->stepsToDo);
+    if (motor->stepsToDo <= 0) {
+      esp_timer_stop(motor->accel_timer);
+      return;
+    }
   }
 
   motor->velocity += motor->accel;
@@ -71,7 +72,6 @@ void accelCallback(void *_motor) {
   }
 
   if (velocityRounded < 2) {
-    // Serial.println("Skipping ...");
     return;
   }
 
@@ -95,16 +95,10 @@ void accelCallback(void *_motor) {
     // Calculate the remaining time
     int delay = round((float)(motor->stepsToDo)/(float)velocityRounded * 1000000.0);
     motor->stopDelay = delay;
-    // Serial.printf("Delay: %d\n", delay);
-    // motor->stepsToDo = 0;
     // Stop the acceleration timer and start the stop timer
     esp_timer_start_once(motor->stop_timer, delay);
     esp_timer_stop(motor->accel_timer);
   }
-  // else {
-  //   // Else calculate steps done until next callback 
-  //   motor->stepsToDo -= predictedSteps;
-  // }
 
   // Resume the PWM signal
   motor->timeLastCall = esp_timer_get_time();
@@ -154,7 +148,7 @@ StepperMotor::StepperMotor(
       int difference = esp_timer_get_time() - motor->timeLastCall;
       int steps = ceil(round(motor->velocity) * difference/1000000.0);
       motor->stepsToDo -= steps;
-      Serial.printf("Steps: %d, todo (on %d): %d\n", steps, motor->index, motor->stepsToDo);
+      // Serial.printf("Steps: %d, todo (on %d): %d\n", steps, motor->index, motor->stepsToDo);
     },
     .arg = (void *)this->motor,
     .dispatch_method = ESP_TIMER_TASK,
