@@ -48,7 +48,7 @@ class StepperMotor {
     void applyDirection(bool);
     // void applyVelocity(float);
     // PWM signal controls
-    void doSteps(float, float, int);
+    void doSteps(float, int);
 };
 
 #endif

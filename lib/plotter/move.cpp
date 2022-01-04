@@ -19,8 +19,7 @@ void Plotter::moveTo(Point p) {
 
   // The velocity for the shorter distance will
   // be a fraction of the base velocity of the longer distance
-  int velocityS1 = 0, velocityS2 = 0;
-  int accelerationS1 = 0, accelerationS2 = 0;
+  int velocityS1, velocityS2;
 
   // Special cases
   if (stepsS1 == 0 && stepsS2 == 0) {
@@ -28,7 +27,6 @@ void Plotter::moveTo(Point p) {
     return;
   } else if (stepsS1 == 0) {
     velocityS2 = baseVelocity; 
-    accelerationS2 = baseAcceleration;
 
     // // Debug output?
     // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
@@ -38,11 +36,10 @@ void Plotter::moveTo(Point p) {
     // Serial.printf("Delay: %d\n", accelerationS2);
 
     this->stepper2.applyDirection(distanceS2 < 0);
-    this->stepper2.doSteps(velocityS2, accelerationS2, stepsS2);
+    this->stepper2.doSteps(velocityS2, stepsS2);
 
   } else if (stepsS2 == 0) {
     velocityS1 = baseVelocity; 
-    accelerationS1 = baseAcceleration;
 
     // // Debug output?
     // Serial.printf("Steps: %d, %d\n", stepsS1, stepsS2);
@@ -52,44 +49,40 @@ void Plotter::moveTo(Point p) {
     // Serial.printf("Delay: %d\n", accelerationS1);
 
     this->stepper1.applyDirection(distanceS1 < 0);
-    this->stepper1.doSteps(velocityS1, accelerationS1, stepsS1);
+    this->stepper1.doSteps(velocityS1, stepsS1);
 
   // Normal cases
   } else {
     if (stepsS1 > stepsS2) {
       velocityS1 = baseVelocity;
-      accelerationS1 = baseAcceleration;
       velocityS2 = round((float)stepsS2/(float)stepsS1 * baseVelocity);
-      // Ledc can't produce frequency of 1 Hz without special configuration
-      if (round(velocityS1) < 2) {
-        this->stepper2.detachPin();
-        for (int i = 0; i < stepsS2; i++) {
-          this->stepper2.step();
-        }
-        this->stepper2.attachPin();
-        stepsS2 = 0;
-      } else {
-        accelerationS2 = round((float)velocityS2/(float)velocityS1 * baseAcceleration);
-      }
+      // // Ledc can't produce frequency of 1 Hz without special configuration
+      // if (round(velocityS1) < 2) {
+      //   this->stepper2.detachPin();
+      //   for (int i = 0; i < stepsS2; i++) {
+      //     this->stepper2.step();
+      //   }
+      //   this->stepper2.attachPin();
+      //   stepsS2 = 0;
+      // } else {
+      //   accelerationS2 = round((float)velocityS2/(float)velocityS1 * baseAcceleration);
+      // }
     } else if (stepsS1 < stepsS2) {
       velocityS2 = baseVelocity;
-      accelerationS2 = baseAcceleration;
       velocityS1 = round((float)stepsS1/(float)stepsS2 * baseVelocity);
-      // Ledc can't produce frequency of 1 Hz without special configuration
-      if (round(velocityS1) < 2) {
-        this->stepper1.detachPin();
-        for (int i = 0; i < stepsS1; i++) {
-          this->stepper1.step();
-        }
-        this->stepper1.attachPin();
-      } else {
-        accelerationS1 = round((float)velocityS1/(float)velocityS2 * baseAcceleration);
-      }
+      // // Ledc can't produce frequency of 1 Hz without special configuration
+      // if (round(velocityS1) < 2) {
+      //   this->stepper1.detachPin();
+      //   for (int i = 0; i < stepsS1; i++) {
+      //     this->stepper1.step();
+      //   }
+      //   this->stepper1.attachPin();
+      // } else {
+      //   accelerationS1 = round((float)velocityS1/(float)velocityS2 * baseAcceleration);
+      // }
     } else {
       velocityS1 = baseVelocity;
-      accelerationS1 = baseAcceleration;
       velocityS2 = baseVelocity;
-      accelerationS2 = baseAcceleration;
     }
 
     // // Debug output?
@@ -104,15 +97,11 @@ void Plotter::moveTo(Point p) {
     //           -> failed, because `vTaskDelay` is only able to
     //              delay with a precision of 1ms 
 
-    if (stepsS1 != 0) {
-      this->stepper1.applyDirection(distanceS1 < 0);
-      this->stepper1.doSteps(velocityS1, accelerationS1, stepsS1);
-    }
+    this->stepper1.applyDirection(distanceS1 < 0);
+    this->stepper1.doSteps(velocityS1, stepsS1);
 
-    if (stepsS2 != 0) {
-      this->stepper2.applyDirection(distanceS2 < 0);
-      this->stepper2.doSteps(velocityS2, accelerationS2, stepsS2);
-    }
+    this->stepper2.applyDirection(distanceS2 < 0);
+    this->stepper2.doSteps(velocityS2, stepsS2);
   }
 
   // Wait for the timers to trigger a stop
