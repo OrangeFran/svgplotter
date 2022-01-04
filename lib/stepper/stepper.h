@@ -22,6 +22,7 @@ typedef struct Motor {
   float target_velocity;
   float accel; 
   int timeLastCall;
+  int stopDelay;
   esp_timer_handle_t accel_timer;
   esp_timer_handle_t stop_timer;
   int stepsToDo;
@@ -36,10 +37,10 @@ class StepperMotor {
     // Specify if step pin is attached to PWM channel or not
     // Joystick only works if attached is false
     bool attached;
-    Motor *motor;
 
   public:
     int index; // Left motor -> 0, right motor -> 1
+    Motor *motor;
 
     StepperMotor(int, int, int);
     void step(void);

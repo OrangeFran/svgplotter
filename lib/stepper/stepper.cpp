@@ -58,7 +58,7 @@ void accelCallback(void *_motor) {
   // Update steps done
   if (round(motor->velocity) >= 2) {
     // Serial.printf("Velocity: %f, difference: %d ...\n", motor->velocity, difference);
-    int steps = ceil(motor->velocity * difference/1000000.0);
+    int steps = ceil(round(motor->velocity) * difference/1000000.0);
     motor->stepsToDo -= steps;
     // Serial.printf("Steps done: %d, todo: %d\n", steps, motor->stepsToDo);
   }
@@ -71,7 +71,7 @@ void accelCallback(void *_motor) {
   }
 
   if (velocityRounded < 2) {
-    Serial.println("Skipping ...");
+    // Serial.println("Skipping ...");
     return;
   }
 
@@ -94,7 +94,8 @@ void accelCallback(void *_motor) {
   if (motor->stepsToDo <= predictedSteps || velocityRounded == round(motor->target_velocity)) {
     // Calculate the remaining time
     int delay = round((float)(motor->stepsToDo)/(float)velocityRounded * 1000000.0);
-    Serial.printf("Delay: %d\n", delay);
+    motor->stopDelay = delay;
+    // Serial.printf("Delay: %d\n", delay);
     // motor->stepsToDo = 0;
     // Stop the acceleration timer and start the stop timer
     esp_timer_start_once(motor->stop_timer, delay);
@@ -151,7 +152,9 @@ StepperMotor::StepperMotor(
       ledc_timer_pause(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
       ledc_timer_rst(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index));
       int difference = esp_timer_get_time() - motor->timeLastCall;
-      Serial.printf("Diff: %d\n", difference);
+      int steps = ceil(round(motor->velocity) * difference/1000000.0);
+      motor->stepsToDo -= steps;
+      Serial.printf("Steps: %d, todo (on %d): %d\n", steps, motor->index, motor->stepsToDo);
     },
     .arg = (void *)this->motor,
     .dispatch_method = ESP_TIMER_TASK,
@@ -241,7 +244,7 @@ void StepperMotor::doSteps(float t_velocity, int steps) {
     this->motor->target_velocity = t_velocity;
     this->motor->accel = t_velocity/10.0;
 
-    Serial.printf("Accel: %f\n", this->motor->accel);
+    // Serial.printf("Accel: %f\n", this->motor->accel);
 
     // Start the accel timer (1s (10 x 0.1s))
     // The accel timer will automatically start

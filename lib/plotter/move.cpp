@@ -110,11 +110,29 @@ void Plotter::moveTo(Point p) {
   while (true) {
     next_alarm = esp_timer_get_next_alarm();
     if (next_alarm == -1) {
+      Serial.println("Breaking ...");
       break;
     };
+    // delay(100);
   }
 
-  // // Cautionary waiting
+  // Correct steps
+  if (this->stepper1.motor->stepsToDo < 0) {
+    this->stepper1.detachPin();
+    this->stepper1.applyDirection(distanceS1 > 0);
+    this->stepper1.step();
+    this->stepper1.attachPin();
+    Serial.println("Corrected s1");
+  }
+  if (this->stepper2.motor->stepsToDo < 0) {
+    this->stepper2.detachPin();
+    this->stepper2.applyDirection(distanceS2 > 0);
+    this->stepper2.step();
+    this->stepper2.attachPin();
+    Serial.println("Corrected s2");
+  }
+
+  // Cautionary waiting
   delay(100);
 
   // Update the position
