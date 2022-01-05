@@ -8,7 +8,6 @@ const float boardWidth = 1970.0;   // mm
 const float boardHeight = 1185.0;  // mm
 
 const float baseVelocity = 1000.0; // Steps per second
-const float baseAcceleration = 1000.0; // Steps per second per second
 
 Point::Point(float x, float y) {
   this->x = x;
