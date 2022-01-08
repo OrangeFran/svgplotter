@@ -117,21 +117,27 @@ void Plotter::moveTo(Point p) {
   }
 
   // Correct steps
-  if (this->stepper1.motor->stepsToDo < 0) {
+  if (this->stepper1.motor->stepsToDo != 0) {
     this->stepper1.detachPin();
     // Reverse direction
-    this->stepper1.applyDirection(distanceS1 > 0);
-    this->stepper1.step();
+    if (this->stepper1.motor->stepsToDo < 0) {
+      this->stepper1.applyDirection(distanceS1 > 0);
+    }
+    for (int i = 0; i < this->stepper1.motor->stepsToDo; i++) {
+      this->stepper1.step();
+    }
     this->stepper1.attachPin();
-    // Serial.println("Corrected s1");
   }
-  if (this->stepper2.motor->stepsToDo < 0) {
+  if (this->stepper2.motor->stepsToDo != 0) {
     this->stepper2.detachPin();
     // Reverse direction
-    this->stepper2.applyDirection(distanceS2 > 0);
-    this->stepper2.step();
+    if (this->stepper1.motor->stepsToDo < 0) {
+      this->stepper2.applyDirection(distanceS2 > 0);
+    }
+    for (int i = 0; i < this->stepper1.motor->stepsToDo; i++) {
+      this->stepper2.step();
+    }
     this->stepper2.attachPin();
-    // Serial.println("Corrected s2");
   }
 
   // Cautionary waiting

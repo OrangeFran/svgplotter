@@ -5,9 +5,8 @@
 #define TIMER_I(i) (i == 0 ? LEDC_TIMER_0 : LEDC_TIMER_1)
 #define CHANNEL_I(i) (i == 0 ? LEDC_CHANNEL_0 : LEDC_CHANNEL_1)
 
-// 20 * π / (200 * 32)
+// 20.4 * π / (200 * 32)
 const float perstep = 20.4 * PI / (200.0 * 32.0);
-                      // 0.009817477;
 
 // Accelerate every tenth of a second
 const float accelDelay = 0.1;

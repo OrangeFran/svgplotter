@@ -4,8 +4,8 @@
 #include "parser.h"
 
 // Whiteboard
-const float boardWidth = 1970.0;   // mm
-const float boardHeight = 1185.0;  // mm
+const float boardWidth = 1965.0;   // mm
+const float boardHeight = 1180.0;  // mm
 
 const float baseVelocity = 1000.0; // Steps per second
 

@@ -3,8 +3,8 @@
 
 const int servoPin = 22;
 
-const int ledcDownFreq = (int)(1.0/20.0 * 256.0);
-const int ledcUpFreq = (int)(1.5/20.0 * 256.0);
+const int ledcDownFreq = round(1.0/20.0 * 256.0);
+const int ledcUpFreq = round(1.5/20.0 * 256.0);
 
 Servo::Servo(int pin) {
   this->pin = pin;
