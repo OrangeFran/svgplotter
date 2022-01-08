@@ -74,10 +74,6 @@ void accelCallback(void *_motor) {
     return;
   }
 
-  // Serial.printf("Velocity (%d): %f\n", motor->index, motor->velocity);
-  // Serial.printf("Applied acceleration: %f\n", appliedAcceleration); 
-  // Serial.printf("Predicted steps: %d", predictedSteps);
-
   // Apply the velocity
   ledc_set_freq(LEDC_HIGH_SPEED_MODE, TIMER_I(motor->index), velocityRounded); 
   // dutyCycle should not be less than 2, so we always round up
@@ -147,7 +143,6 @@ StepperMotor::StepperMotor(
       int difference = esp_timer_get_time() - motor->timeLastCall;
       int steps = ceil(round(motor->velocity) * difference/1000000.0);
       motor->stepsToDo -= steps;
-      // Serial.printf("Steps: %d, todo (on %d): %d\n", steps, motor->index, motor->stepsToDo);
     },
     .arg = (void *)this->motor,
     .dispatch_method = ESP_TIMER_TASK,
@@ -236,8 +231,6 @@ void StepperMotor::doSteps(float t_velocity, int steps) {
     this->motor->stepsToDo = steps;
     this->motor->target_velocity = t_velocity;
     this->motor->accel = t_velocity/10.0;
-
-    // Serial.printf("Accel: %f\n", this->motor->accel);
 
     // Start the accel timer (1s (10 x 0.1s))
     // The accel timer will automatically start
