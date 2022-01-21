@@ -63,34 +63,35 @@ void Plotter::moveTo(Point p) {
 
   // Wait for the timers to trigger a stop
   // `esp_timer_get_next_alarm()` is -1 if no timer is active
-  int next_alarm;
   while (true) {
-    next_alarm = esp_timer_get_next_alarm();
-    if (next_alarm == -1) {
+    if ((int)esp_timer_get_next_alarm() == -1) {
       break;
-    };
+    }
     delay(100);
   }
 
   // Correct steps
-  if (this->stepper1.motor->stepsToDo != 0) {
+  int remStepsS1 = this->stepper1.motor->stepsToDo;
+  if (remStepsS1 != 0) {
     this->stepper1.detachPin();
     // Reverse direction
-    if (this->stepper1.motor->stepsToDo < 0) {
+    if (remStepsS1 < 0) {
       this->stepper1.applyDirection(distanceS1 > 0);
     }
-    for (int i = 0; i < this->stepper1.motor->stepsToDo; i++) {
+    for (int i = 0; i < remStepsS1; i++) {
       this->stepper1.step();
     }
     this->stepper1.attachPin();
   }
-  if (this->stepper2.motor->stepsToDo != 0) {
+
+  int remStepsS2 = this->stepper2.motor->stepsToDo;
+  if (remStepsS2 != 0) {
     this->stepper2.detachPin();
     // Reverse direction
-    if (this->stepper1.motor->stepsToDo < 0) {
+    if (remStepsS2 < 0) {
       this->stepper2.applyDirection(distanceS2 > 0);
     }
-    for (int i = 0; i < this->stepper1.motor->stepsToDo; i++) {
+    for (int i = 0; i < remStepsS2; i++) {
       this->stepper2.step();
     }
     this->stepper2.attachPin();
